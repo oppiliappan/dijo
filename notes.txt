@@ -1,0 +1,10 @@
+habit:
+`-type: bit/count
+`-stats:
+  `-year:
+    `-month:
+      `-bit:
+      | `-dates - array
+      |
+      `-count:
+        `-dates - k,v pairs
