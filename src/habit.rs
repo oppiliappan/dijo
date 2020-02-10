@@ -6,16 +6,18 @@ use chrono::NaiveDate;
 pub struct Habit<T> {
     name: String,
     stats: HashMap<NaiveDate, T>,
+    goal: T,
 }
 
 impl<T> Habit<T>
 where
     T: Copy,
 {
-    pub fn new(name: &str) -> Habit<T> {
+    pub fn new(name: &str, goal: T) -> Habit<T> {
         return Habit {
             name: name.to_owned(),
             stats: HashMap::new(),
+            goal,
         };
     }
 
@@ -40,6 +42,9 @@ impl Habit<bool> {
             self.insert_entry(date, true);
         }
     }
+    pub fn reached_goal(&self, date: NaiveDate) -> bool {
+        *self.get_by_date(date).unwrap_or(&false)
+    }
 }
 
 impl Habit<u32> {
@@ -59,5 +64,13 @@ impl Habit<u32> {
     }
     pub fn set(&mut self, date: NaiveDate, val: u32) {
         *self.stats.entry(date).or_insert(val) = val;
+    }
+    pub fn reached_goal(&self, date: NaiveDate) -> bool {
+        if let Some(v) = self.get_by_date(date) {
+            if *v >= self.goal {
+                return true;
+            }
+        }
+        return false;
     }
 }
