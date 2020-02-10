@@ -46,6 +46,7 @@ impl View for BitView {
         let true_style = Style::from(Color::Dark(BaseColor::Cyan));
         let false_style = Style::from(Color::Dark(BaseColor::Magenta));
         let future_style = Style::from(Color::Light(BaseColor::Black));
+        let today_style = Style::from(Color::Dark(BaseColor::White));
 
         for i in 1..=31 {
             let day = NaiveDate::from_ymd_opt(year, month, i);
@@ -55,6 +56,7 @@ impl View for BitView {
                 let day_status = self.habit.get_by_date(d).unwrap_or(&false);
                 let coords = ((i % 7) * 3, i / 7 + 2);
                 let day_chr;
+
                 if d <= now.naive_utc().date() {
                     if *day_status {
                         day_chr = self.true_chr;
