@@ -50,12 +50,14 @@ impl Habit<bool> {
 impl Habit<u32> {
     pub fn increment(&mut self, date: NaiveDate) {
         if let Some(v) = self.stats.get_mut(&date) {
-            *v += 1
+            *v += 1;
+        } else {
+            self.insert_entry(date, 1);
         }
     }
     pub fn decrement(&mut self, date: NaiveDate) {
         if let Some(v) = self.stats.get_mut(&date) {
-            if *v >= 1 {
+            if *v > 0 {
                 *v -= 1;
             } else {
                 *v = 0;
