@@ -2,9 +2,6 @@
 
 use chrono::NaiveDate;
 
-use cursive::theme::Color::*;
-use cursive::theme::PaletteColor::*;
-use cursive::theme::{BaseColor, BorderStyle, Palette, Theme};
 use cursive::views::{Dialog, LinearLayout};
 use cursive::Cursive;
 
@@ -14,32 +11,11 @@ use crate::habit::Habit;
 mod views;
 use crate::views::BitView;
 
+mod theme;
+
 enum ViewMode {
     Daily,
     Monthly,
-}
-
-fn pallete_gen() -> Palette {
-    let mut p = Palette::default();
-    p[Background] = Dark(BaseColor::Black);
-    p[Shadow] = Light(BaseColor::Black);
-    p[View] = Dark(BaseColor::Black);
-    p[Primary] = Dark(BaseColor::White);
-    p[Secondary] = Light(BaseColor::Black);
-    p[Tertiary] = Dark(BaseColor::Green);
-    p[TitlePrimary] = Light(BaseColor::White);
-    p[Highlight] = Dark(BaseColor::Red);
-    p[HighlightInactive] = Dark(BaseColor::Black);
-
-    return p;
-}
-
-fn theme_gen() -> Theme {
-    let mut t = Theme::default();
-    t.shadow = false;
-    t.borders = BorderStyle::Simple;
-    t.palette = pallete_gen();
-    return t;
 }
 
 fn main() {
@@ -71,6 +47,6 @@ fn main() {
             .child(Dialog::around(reading_view).title(reading_title)),
     );
 
-    s.set_theme(theme_gen());
+    s.set_theme(theme::theme_gen());
     s.run();
 }
