@@ -9,7 +9,8 @@ mod habit;
 use crate::habit::Habit;
 
 mod views;
-use crate::views::BitView;
+use crate::views::bitview::BitView;
+use crate::views::countview::CountView;
 
 mod theme;
 
@@ -19,7 +20,7 @@ enum ViewMode {
 }
 
 fn main() {
-    let mut work_out: Habit<bool> = Habit::new("gymming");
+    let mut work_out: Habit<bool> = Habit::new("gymming", true);
     work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 4), true);
     work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 2), true);
     work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 3), true);
@@ -28,16 +29,17 @@ fn main() {
     work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 8), false);
     work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 11), false);
 
-    let mut again: Habit<bool> = Habit::new("reading");
-    again.insert_entry(NaiveDate::from_ymd(2020, 2, 4), true);
-    again.insert_entry(NaiveDate::from_ymd(2020, 2, 2), true);
+    let mut again: Habit<u32> = Habit::new("reading", 5);
+    again.insert_entry(NaiveDate::from_ymd(2020, 2, 4), 4);
+    again.insert_entry(NaiveDate::from_ymd(2020, 2, 2), 2);
+    again.insert_entry(NaiveDate::from_ymd(2020, 2, 7), 5);
 
     let mut s = Cursive::default();
 
     let gym_view = BitView::new(work_out);
     let gym_title = gym_view.get_title();
 
-    let reading_view = BitView::new(again);
+    let reading_view = CountView::new(again);
     let reading_title = reading_view.get_title();
 
     s.add_global_callback('q', |a| a.quit());
