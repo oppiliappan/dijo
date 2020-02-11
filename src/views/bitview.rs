@@ -1,7 +1,6 @@
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult, Key};
-use cursive::theme::{BaseColor, Color, Effect, Style};
-use cursive::utils::markup::StyledString;
+use cursive::theme::{BaseColor, Color, Style};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
@@ -46,7 +45,6 @@ impl View for BitView {
         let true_style = Style::from(Color::Dark(BaseColor::Cyan));
         let false_style = Style::from(Color::Dark(BaseColor::Magenta));
         let future_style = Style::from(Color::Light(BaseColor::Black));
-        let today_style = Style::from(Color::Dark(BaseColor::White));
 
         for i in 1..=31 {
             let day = NaiveDate::from_ymd_opt(year, month, i);

@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
 use chrono::NaiveDate;
+use serde::Serialize;
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct Habit<T> {
     name: String,
     stats: HashMap<NaiveDate, T>,
@@ -20,15 +21,12 @@ where
             goal,
         };
     }
-
     pub fn get_name(&self) -> String {
         return self.name.to_owned();
     }
-
     pub fn get_by_date(&self, date: NaiveDate) -> Option<&T> {
         self.stats.get(&date)
     }
-
     pub fn insert_entry(&mut self, date: NaiveDate, val: T) {
         *self.stats.entry(date).or_insert(val) = val;
     }

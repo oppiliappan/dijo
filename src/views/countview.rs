@@ -1,7 +1,6 @@
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult, Key};
-use cursive::theme::{BaseColor, Color, Effect, Style};
-use cursive::utils::markup::StyledString;
+use cursive::theme::{BaseColor, Color, Style};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
