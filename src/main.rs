@@ -2,51 +2,50 @@
 
 use chrono::NaiveDate;
 
-use cursive::views::{Dialog, LinearLayout};
+use cursive::views::{Dialog, EditView, LinearLayout, ListView, SelectView};
 use cursive::Cursive;
 
 mod habit;
-use crate::habit::Habit;
+use crate::habit::{Habit, HabitTrait, HabitType};
 
 mod views;
-use crate::views::bitview::BitView;
-use crate::views::countview::CountView;
+use crate::views::habitview::HabitView;
 
 mod theme;
 
-enum ViewMode {
-    Daily,
-    Monthly,
+struct App {
+    habits: Vec<Habit>,
+    status: String,
 }
 
 fn main() {
-    let mut work_out: Habit<bool> = Habit::new("gymming", true);
-    work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 4), true);
-    work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 2), true);
-    work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 3), true);
-    work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 1), true);
-    work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 5), false);
-    work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 8), false);
-    work_out.insert_entry(NaiveDate::from_ymd(2020, 2, 11), false);
-
-    let mut again: Habit<u32> = Habit::new("reading", 5);
-    again.insert_entry(NaiveDate::from_ymd(2020, 2, 4), 4);
-    again.insert_entry(NaiveDate::from_ymd(2020, 2, 2), 2);
-    again.insert_entry(NaiveDate::from_ymd(2020, 2, 7), 5);
-
     let mut s = Cursive::default();
 
-    let gym_view = BitView::new(work_out);
-    let gym_title = gym_view.get_title();
+    let mut gymming = Habit::new("gym", HabitType::Count(5));
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 2, 11), HabitType::Count(7));
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 2, 12), HabitType::Count(8));
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 2, 13), HabitType::Count(9));
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 2, 14), HabitType::Count(10));
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 2, 15), HabitType::Count(11));
 
-    let reading_view = CountView::new(again);
-    let reading_title = reading_view.get_title();
+    let mut reading = Habit::new("read", HabitType::Count(5));
+    reading.insert_entry(NaiveDate::from_ymd(2020, 2, 11), HabitType::Bit(true));
+    reading.insert_entry(NaiveDate::from_ymd(2020, 2, 12), HabitType::Bit(false));
+    reading.insert_entry(NaiveDate::from_ymd(2020, 2, 13), HabitType::Bit(true));
+    reading.insert_entry(NaiveDate::from_ymd(2020, 2, 14), HabitType::Bit(false));
+    reading.insert_entry(NaiveDate::from_ymd(2020, 2, 15), HabitType::Bit(true));
+
+    let gym_title = gymming.get_name();
+    let gym_view = HabitView::new(gymming);
+
+    let read_title = reading.get_name();
+    let read_view = HabitView::new(reading);
 
     s.add_global_callback('q', |a| a.quit());
     s.add_layer(
         LinearLayout::horizontal()
             .child(Dialog::around(gym_view).title(gym_title))
-            .child(Dialog::around(reading_view).title(reading_title)),
+            .child(Dialog::around(read_view).title(read_title)),
     );
 
     s.set_theme(theme::theme_gen());
