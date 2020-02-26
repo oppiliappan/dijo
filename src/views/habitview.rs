@@ -41,6 +41,9 @@ impl HabitView {
     pub fn get_title(&self) -> String {
         return self.habit.get_name().to_owned();
     }
+    pub fn get_size(&self) -> Vec2 {
+        (self.view_width, self.view_height).into()
+    }
 }
 
 impl View for HabitView {
