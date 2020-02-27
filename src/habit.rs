@@ -34,6 +34,7 @@ pub trait HabitTrait {
     fn insert_entry(&mut self, date: NaiveDate, val: HabitType);
     fn reached_goal(&self, date: NaiveDate) -> bool;
     fn remaining(&self, date: NaiveDate) -> u32;
+    fn total(&self) -> u32;
 }
 
 #[derive(Serialize, Debug)]
@@ -75,7 +76,7 @@ impl Habit {
         } else {
             match self.goal {
                 HabitType::Bit(_) => self.insert_entry(date, HabitType::Bit(true)),
-                HabitType::Count(_) => self.insert_entry(date, HabitType::Count(0)),
+                HabitType::Count(_) => self.insert_entry(date, HabitType::Count(1)),
             }
         }
     }
@@ -119,7 +120,13 @@ impl HabitTrait for Habit {
                 HabitType::Count(c) => return self.goal.inner_count() - *c,
             }
         } else {
-            return 0;
+            return self.total();
+        }
+    }
+    fn total(&self) -> u32 {
+        match self.goal {
+            HabitType::Bit(_) => return 1,
+            HabitType::Count(c) => return c,
         }
     }
 }
