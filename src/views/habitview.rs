@@ -9,6 +9,8 @@ use chrono::{Local, NaiveDate};
 
 use crate::habit::{Habit, HabitTrait, HabitType, TrackEvent};
 
+use serde::Serialize;
+
 pub struct HabitView {
     habit: Habit,
     // characters to use
@@ -31,18 +33,24 @@ impl HabitView {
             true_chr: '·',
             false_chr: '·',
             future_chr: '·',
-            view_width: 21,
-            view_height: 9,
+            view_width: 25,
+            view_height: 8,
             reached_color: Color::Dark(BaseColor::Cyan),
             todo_color: Color::Dark(BaseColor::Magenta),
             future_color: Color::Light(BaseColor::Black),
         };
     }
-    pub fn get_title(&self) -> String {
+    pub fn get_name(&self) -> String {
         return self.habit.get_name().to_owned();
     }
     pub fn get_size(&self) -> Vec2 {
         (self.view_width, self.view_height).into()
+    }
+    pub fn remaining(&self) -> u32 {
+        self.habit.remaining(Local::now().naive_utc().date())
+    }
+    pub fn total(&self) -> u32 {
+        self.habit.total()
     }
 }
 
@@ -56,6 +64,20 @@ impl View for HabitView {
         let todo_style = Style::from(self.todo_color);
         let future_style = Style::from(self.future_color);
 
+        printer.with_style(
+            if !printer.focused {
+                future_style
+            } else {
+                goal_reached_style
+            },
+            |p| {
+                p.print(
+                    (0, 0),
+                    &format!("{:width$}", self.get_name(), width = self.get_size().x),
+                )
+            },
+        );
+
         for i in 1..=31 {
             let day = NaiveDate::from_ymd_opt(year, month, i);
             let mut day_style;
@@ -66,7 +88,7 @@ impl View for HabitView {
                 } else {
                     day_style = todo_style;
                 }
-                let coords = ((i % 7) * 3, i / 7 + 2);
+                let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
                 let day_chr: Box<dyn std::fmt::Display> = match self.habit.get_by_date(d) {
                     Some(val) => match val {
                         HabitType::Bit(b) => {
