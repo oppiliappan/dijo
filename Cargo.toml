@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 cursive = "0.14"
 serde_json = "1.0"
+lazy_static = "1.4.0"
 
 [dependencies.chrono]
 version = "0.4"
