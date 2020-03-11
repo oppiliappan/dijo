@@ -5,7 +5,8 @@ use cursive::event::{Event, EventResult, Key};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
-use crate::views::habitview::HabitView;
+use crate::habit::{Bit, Count, Habit, HabitWrapper};
+use crate::CONFIGURATION;
 
 #[derive(PartialEq)]
 pub enum ViewMode {
@@ -15,12 +16,9 @@ pub enum ViewMode {
 }
 
 pub struct App {
-    habits: Vec<HabitView>,
+    habits: Vec<Box<dyn HabitWrapper>>,
     view_mode: ViewMode,
     focus: usize,
-    grid_width: usize,
-
-    padding: usize,
 }
 
 impl App {
@@ -29,12 +27,10 @@ impl App {
             habits: vec![],
             view_mode: ViewMode::Day,
             focus: 0,
-            grid_width: 3,
-            padding: 12,
         };
     }
 
-    pub fn add_habit(mut self, h: HabitView) -> Self {
+    pub fn add_habit(mut self, h: Box<dyn HabitWrapper>) -> Self {
         self.habits.push(h);
         return self;
     }
@@ -47,6 +43,7 @@ impl App {
     }
 
     fn set_focus(&mut self, d: Absolute) {
+        let grid_width = CONFIGURATION.grid_width;
         match d {
             Absolute::Right => {
                 if self.focus != self.habits.len() - 1 {
@@ -59,15 +56,15 @@ impl App {
                 }
             }
             Absolute::Down => {
-                if self.focus + self.grid_width < self.habits.len() - 1 {
-                    self.focus += self.grid_width;
+                if self.focus + grid_width < self.habits.len() - 1 {
+                    self.focus += grid_width;
                 } else {
                     self.focus = self.habits.len() - 1;
                 }
             }
             Absolute::Up => {
-                if self.focus as isize - self.grid_width as isize >= 0 {
-                    self.focus -= self.grid_width;
+                if self.focus as isize - grid_width as isize >= 0 {
+                    self.focus -= grid_width;
                 } else {
                     self.focus = 0;
                 }
@@ -77,24 +74,25 @@ impl App {
     }
 
     fn status(&self) -> String {
-        let remaining = self.habits.iter().map(|h| h.remaining()).sum::<u32>();
+        let today = chrono::Local::now().naive_utc().date();
+        let remaining = self.habits.iter().map(|h| h.remaining(today)).sum::<u32>();
         let total = self.habits.iter().map(|h| h.total()).sum::<u32>();
         let completed = total - remaining;
 
-        return format!("{}/{} ", completed, total);
+        return format!("{} completed, {} remaining", completed, remaining);
     }
     fn max_size(&self) -> Vec2 {
-        let grid_width = self.grid_width;
+        let grid_width = CONFIGURATION.grid_width;
         let width = {
             if self.habits.len() > 0 {
-                grid_width * self.habits[0].get_size().x
+                grid_width * CONFIGURATION.view_width
             } else {
                 0
             }
         };
         let height = {
             if self.habits.len() > 0 {
-                (self.habits[0].get_size().y as f64
+                (CONFIGURATION.view_height as f64
                     * (self.habits.len() as f64 / grid_width as f64).ceil())
                     as usize
             } else {
@@ -107,31 +105,31 @@ impl App {
 
 impl View for App {
     fn draw(&self, printer: &Printer) {
-        let grid_width = self.grid_width;
+        let grid_width = CONFIGURATION.grid_width;
         let mut offset = Vec2::zero();
         for (idx, i) in self.habits.iter().enumerate() {
             if idx >= grid_width && idx % grid_width == 0 {
-                offset = offset.map_y(|y| y + i.get_size().y).map_x(|_| 0);
+                offset = offset.map_y(|y| y + CONFIGURATION.view_height).map_x(|_| 0);
             }
             i.draw(&printer.offset(offset).focused(self.focus == idx));
-            offset = offset.map_x(|x| x + i.get_size().x);
+            offset = offset.map_x(|x| x + CONFIGURATION.view_width);
         }
         offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 2);
         printer.print(offset, &self.status());
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {
-        let grid_width = self.grid_width;
+        let grid_width = CONFIGURATION.grid_width;
         let width = {
             if self.habits.len() > 0 {
-                grid_width * self.habits[0].get_size().x
+                grid_width * CONFIGURATION.view_width
             } else {
                 0
             }
         };
         let height = {
             if self.habits.len() > 0 {
-                (self.habits[0].get_size().y as f64
+                (CONFIGURATION.view_height as f64
                     * (self.habits.len() as f64 / grid_width as f64).ceil())
                     as usize
             } else {
