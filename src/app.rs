@@ -1,24 +1,33 @@
 use std::f64;
+use std::fs::File;
+use std::io::prelude::*;
 
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
+use chrono::NaiveDate;
+
 use crate::habit::{Bit, Count, Habit, HabitWrapper};
 use crate::CONFIGURATION;
 
-#[derive(PartialEq)]
+use serde::Serialize;
+
+#[derive(PartialEq, Serialize)]
 pub enum ViewMode {
     Day,
     Month,
     Year,
 }
 
+#[derive(Serialize)]
 pub struct App {
     habits: Vec<Box<dyn HabitWrapper>>,
-    view_mode: ViewMode,
     focus: usize,
+
+    #[serde(skip)]
+    view_mode: ViewMode,
 }
 
 impl App {
@@ -30,16 +39,14 @@ impl App {
         };
     }
 
-    pub fn add_habit(mut self, h: Box<dyn HabitWrapper>) -> Self {
+    pub fn add_habit(&mut self, h: Box<dyn HabitWrapper>) {
         self.habits.push(h);
-        return self;
     }
 
-    pub fn set_mode(mut self, set_mode: ViewMode) -> Self {
+    pub fn set_mode(&mut self, set_mode: ViewMode) {
         if set_mode != self.view_mode {
-            self.view_mode = set_mode
+            self.view_mode = set_mode;
         }
-        return self;
     }
 
     fn set_focus(&mut self, d: Absolute) {
@@ -81,6 +88,7 @@ impl App {
 
         return format!("{} completed, {} remaining", completed, remaining);
     }
+
     fn max_size(&self) -> Vec2 {
         let grid_width = CONFIGURATION.grid_width;
         let width = {
@@ -101,6 +109,10 @@ impl App {
         };
         Vec2::new(width, height)
     }
+
+    // this function does IO
+    // TODO: convert this into non-blocking async function
+    fn save_state(&self) {}
 }
 
 impl View for App {
@@ -160,6 +172,33 @@ impl View for App {
             Event::Key(Key::Down) | Event::Char('j') => {
                 self.set_focus(Absolute::Down);
                 return EventResult::Consumed(None);
+            }
+            Event::Char('a') => {
+                let mut gymming = Count::new("gym", 5);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 11), 7);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 12), 8);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 13), 9);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 14), 10);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 15), 11);
+                self.add_habit(Box::new(gymming));
+                return EventResult::Consumed(None);
+            }
+            Event::Char('d') => {
+                self.habits.remove(self.focus);
+                return EventResult::Consumed(None);
+            }
+            Event::Char('w') => {
+                let j = serde_json::to_string_pretty(&self).unwrap();
+                let mut file = File::create("foo.txt").unwrap();
+                file.write_all(j.as_bytes()).unwrap();
+                return EventResult::Consumed(None);
+            }
+            Event::Char('q') => {
+                let j = serde_json::to_string_pretty(&self).unwrap();
+                let mut file = File::create("foo.txt").unwrap();
+                file.write_all(j.as_bytes()).unwrap();
+
+                return EventResult::with_cb(|s| s.quit());
             }
             _ => self.habits[self.focus].on_event(e),
         }
