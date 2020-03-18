@@ -23,7 +23,7 @@ impl fmt::Display for CustomBool {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{}",
+            "{:^3}",
             if self.0 {
                 CONFIGURATION.true_chr
             } else {
@@ -53,7 +53,7 @@ pub trait Habit {
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
 }
 
-pub trait HabitWrapper {
+pub trait HabitWrapper: erased_serde::Serialize {
     fn remaining(&self, date: NaiveDate) -> u32;
     fn total(&self) -> u32;
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
@@ -63,9 +63,13 @@ pub trait HabitWrapper {
     fn take_focus(&mut self, _: Direction) -> bool;
 }
 
+use erased_serde::serialize_trait_object;
+serialize_trait_object!(HabitWrapper);
+
 impl<T> HabitWrapper for T
 where
     T: Habit + ShadowView,
+    T: Serialize,
     T::HabitType: std::fmt::Display,
 {
     fn remaining(&self, date: NaiveDate) -> u32 {

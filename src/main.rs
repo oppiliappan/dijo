@@ -77,13 +77,10 @@ fn main() {
     walking.insert_entry(NaiveDate::from_ymd(2020, 3, 14), false.into());
     walking.insert_entry(NaiveDate::from_ymd(2020, 3, 15), true.into());
 
-    s.add_global_callback('q', |a| a.quit());
-    let app = App::new()
-        .add_habit(Box::new(gymming))
-        .add_habit(Box::new(reading))
-        .add_habit(Box::new(walking))
-        .set_mode(ViewMode::Month);
-
+    let mut app = App::new();
+    app.add_habit(Box::new(gymming));
+    app.add_habit(Box::new(reading));
+    app.add_habit(Box::new(walking));
     s.add_layer(app);
 
     s.set_theme(theme::theme_gen());

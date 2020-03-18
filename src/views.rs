@@ -109,11 +109,9 @@ macro_rules! auto_view_impl {
             fn required_size(&mut self, x: Vec2) -> Vec2 {
                 ShadowView::required_size(self, x)
             }
-
             fn take_focus(&mut self, d: Direction) -> bool {
                 ShadowView::take_focus(self, d)
             }
-
             fn on_event(&mut self, e: Event) -> EventResult {
                 ShadowView::on_event(self, e)
             }
