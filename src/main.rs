@@ -57,25 +57,25 @@ fn main() {
     let mut s = Cursive::default();
 
     let mut gymming = Count::new("gym", 5);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 11), 7);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 12), 8);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 13), 9);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 14), 10);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 15), 11);
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 11), 7);
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 12), 8);
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 13), 9);
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 14), 10);
+    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 15), 11);
 
     let mut reading = Bit::new("read");
-    reading.insert_entry(NaiveDate::from_ymd(2020, 3, 11), true.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 3, 12), false.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 3, 13), true.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 3, 14), false.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 3, 15), true.into());
+    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 11), true.into());
+    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 12), false.into());
+    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 13), true.into());
+    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 14), false.into());
+    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 15), true.into());
 
     let mut walking = Bit::new("walk");
-    walking.insert_entry(NaiveDate::from_ymd(2020, 3, 11), true.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 3, 12), false.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 3, 13), true.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 3, 14), false.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 3, 15), true.into());
+    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 11), true.into());
+    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 12), false.into());
+    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 13), true.into());
+    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 14), false.into());
+    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 15), true.into());
 
     let mut app = App::new();
     app.add_habit(Box::new(gymming));

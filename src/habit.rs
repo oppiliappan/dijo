@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use chrono::NaiveDate;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult};
@@ -15,7 +15,7 @@ pub enum TrackEvent {
     Decrement,
 }
 
-#[derive(Copy, Clone, Debug, Serialize)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct CustomBool(bool);
 
 use std::fmt;
@@ -53,6 +53,7 @@ pub trait Habit {
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
 }
 
+#[typetag::serde(tag = "type")]
 pub trait HabitWrapper: erased_serde::Serialize {
     fn remaining(&self, date: NaiveDate) -> u32;
     fn total(&self) -> u32;
@@ -63,39 +64,39 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn take_focus(&mut self, _: Direction) -> bool;
 }
 
-use erased_serde::serialize_trait_object;
-serialize_trait_object!(HabitWrapper);
-
-impl<T> HabitWrapper for T
-where
-    T: Habit + ShadowView,
-    T: Serialize,
-    T::HabitType: std::fmt::Display,
-{
-    fn remaining(&self, date: NaiveDate) -> u32 {
-        Habit::remaining(self, date)
-    }
-    fn total(&self) -> u32 {
-        Habit::total(self)
-    }
-    fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
-        Habit::modify(self, date, event);
-    }
-    fn draw(&self, printer: &Printer) {
-        ShadowView::draw(self, printer)
-    }
-    fn on_event(&mut self, event: Event) -> EventResult {
-        ShadowView::on_event(self, event)
-    }
-    fn required_size(&mut self, x: Vec2) -> Vec2 {
-        ShadowView::required_size(self, x)
-    }
-    fn take_focus(&mut self, d: Direction) -> bool {
-        ShadowView::take_focus(self, d)
-    }
+macro_rules! auto_habit_impl {
+    ($struct_name:ident) => {
+        #[typetag::serde]
+        impl HabitWrapper for $struct_name {
+            fn remaining(&self, date: NaiveDate) -> u32 {
+                Habit::remaining(self, date)
+            }
+            fn total(&self) -> u32 {
+                Habit::total(self)
+            }
+            fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
+                Habit::modify(self, date, event);
+            }
+            fn draw(&self, printer: &Printer) {
+                ShadowView::draw(self, printer)
+            }
+            fn on_event(&mut self, event: Event) -> EventResult {
+                ShadowView::on_event(self, event)
+            }
+            fn required_size(&mut self, x: Vec2) -> Vec2 {
+                ShadowView::required_size(self, x)
+            }
+            fn take_focus(&mut self, d: Direction) -> bool {
+                ShadowView::take_focus(self, d)
+            }
+        }
+    };
 }
 
-#[derive(Debug, Serialize)]
+auto_habit_impl!(Count);
+auto_habit_impl!(Bit);
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Count {
     name: String,
     stats: HashMap<NaiveDate, u32>,
@@ -170,7 +171,7 @@ impl Habit for Count {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Bit {
     name: String,
     stats: HashMap<NaiveDate, CustomBool>,
