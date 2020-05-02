@@ -11,6 +11,7 @@ cursive = "0.14"
 serde_json = "1.0"
 lazy_static = "1.4.0"
 erased-serde = "0.3"
+typetag = "0.1.4"
 
 [dependencies.chrono]
 version = "0.4"
