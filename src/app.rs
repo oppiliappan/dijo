@@ -12,16 +12,22 @@ use chrono::NaiveDate;
 use crate::habit::{Bit, Count, Habit, HabitWrapper};
 use crate::CONFIGURATION;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Serialize)]
+#[derive(PartialEq, Serialize, Deserialize)]
 pub enum ViewMode {
     Day,
     Month,
     Year,
 }
 
-#[derive(Serialize)]
+impl std::default::Default for ViewMode {
+    fn default() -> Self {
+        ViewMode::Month
+    }
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct App {
     habits: Vec<Box<dyn HabitWrapper>>,
     focus: usize,
@@ -110,9 +116,20 @@ impl App {
         Vec2::new(width, height)
     }
 
+    fn load_state() -> Self {
+        let mut file = File::open("foo.txt").unwrap();
+        let mut j = String::new();
+        file.read_to_string(&mut j);
+        return serde_json::from_str(&j).unwrap();
+    }
+
     // this function does IO
     // TODO: convert this into non-blocking async function
-    fn save_state(&self) {}
+    fn save_state(&self) {
+        let j = serde_json::to_string_pretty(&self).unwrap();
+        let mut file = File::create("foo.txt").unwrap();
+        file.write_all(j.as_bytes()).unwrap();
+    }
 }
 
 impl View for App {
@@ -175,11 +192,11 @@ impl View for App {
             }
             Event::Char('a') => {
                 let mut gymming = Count::new("gym", 5);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 11), 7);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 12), 8);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 13), 9);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 14), 10);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 3, 15), 11);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 11), 7);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 12), 8);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 13), 9);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 14), 10);
+                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 15), 11);
                 self.add_habit(Box::new(gymming));
                 return EventResult::Consumed(None);
             }
@@ -194,10 +211,7 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::Char('q') => {
-                let j = serde_json::to_string_pretty(&self).unwrap();
-                let mut file = File::create("foo.txt").unwrap();
-                file.write_all(j.as_bytes()).unwrap();
-
+                self.save_state();
                 return EventResult::with_cb(|s| s.quit());
             }
             _ => self.habits[self.focus].on_event(e),
