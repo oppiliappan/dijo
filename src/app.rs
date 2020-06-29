@@ -30,6 +30,8 @@ impl std::default::Default for ViewMode {
 #[derive(Serialize, Deserialize)]
 pub struct App {
     habits: Vec<Box<dyn HabitWrapper>>,
+
+    #[serde(skip)]
     focus: usize,
 
     #[serde(skip)]
@@ -116,7 +118,7 @@ impl App {
         Vec2::new(width, height)
     }
 
-    fn load_state() -> Self {
+    pub fn load_state() -> Self {
         let mut file = File::open("foo.txt").unwrap();
         let mut j = String::new();
         file.read_to_string(&mut j);
@@ -143,7 +145,7 @@ impl View for App {
             i.draw(&printer.offset(offset).focused(self.focus == idx));
             offset = offset.map_x(|x| x + CONFIGURATION.view_width);
         }
-        offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 2);
+        offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 1);
         printer.print(offset, &self.status());
     }
 
