@@ -56,31 +56,33 @@ fn load_configuration_file() -> AppConfig {
 fn main() {
     let mut s = Cursive::default();
 
-    let mut gymming = Count::new("gym", 5);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 11), 7);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 12), 8);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 13), 9);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 14), 10);
-    gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 15), 11);
+    // let mut gymming = Count::new("gym", 5);
+    // gymming.insert_entry(NaiveDate::from_ymd(2020, 5, 11), 7);
+    // gymming.insert_entry(NaiveDate::from_ymd(2020, 5, 12), 8);
+    // gymming.insert_entry(NaiveDate::from_ymd(2020, 5, 13), 9);
+    // gymming.insert_entry(NaiveDate::from_ymd(2020, 5, 14), 10);
+    // gymming.insert_entry(NaiveDate::from_ymd(2020, 5, 15), 11);
 
-    let mut reading = Bit::new("read");
-    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 11), true.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 12), false.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 13), true.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 14), false.into());
-    reading.insert_entry(NaiveDate::from_ymd(2020, 4, 15), true.into());
+    // let mut reading = Bit::new("read");
+    // reading.insert_entry(NaiveDate::from_ymd(2020, 5, 11), true.into());
+    // reading.insert_entry(NaiveDate::from_ymd(2020, 5, 12), false.into());
+    // reading.insert_entry(NaiveDate::from_ymd(2020, 5, 13), true.into());
+    // reading.insert_entry(NaiveDate::from_ymd(2020, 5, 14), false.into());
+    // reading.insert_entry(NaiveDate::from_ymd(2020, 5, 15), true.into());
 
-    let mut walking = Bit::new("walk");
-    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 11), true.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 12), false.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 13), true.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 14), false.into());
-    walking.insert_entry(NaiveDate::from_ymd(2020, 4, 15), true.into());
+    // let mut walking = Bit::new("walk");
+    // walking.insert_entry(NaiveDate::from_ymd(2020, 5, 11), true.into());
+    // walking.insert_entry(NaiveDate::from_ymd(2020, 5, 12), false.into());
+    // walking.insert_entry(NaiveDate::from_ymd(2020, 5, 13), true.into());
+    // walking.insert_entry(NaiveDate::from_ymd(2020, 5, 14), false.into());
+    // walking.insert_entry(NaiveDate::from_ymd(2020, 5, 15), true.into());
 
-    let mut app = App::new();
-    app.add_habit(Box::new(gymming));
-    app.add_habit(Box::new(reading));
-    app.add_habit(Box::new(walking));
+    // let mut app = App::new();
+    // app.add_habit(Box::new(gymming));
+    // app.add_habit(Box::new(reading));
+    // app.add_habit(Box::new(walking));
+
+    let app = App::load_state();
     s.add_layer(app);
 
     s.set_theme(theme::theme_gen());
