@@ -47,33 +47,25 @@ where
             },
         );
 
-        for i in 1..=31 {
-            let day = NaiveDate::from_ymd_opt(year, month, i);
+        let mut i = 1;
+        while let Some(d) = NaiveDate::from_ymd_opt(year, month, i) {
             let day_style;
-
-            if let Some(d) = day {
-                if self.reached_goal(d) {
-                    day_style = goal_reached_style;
-                } else {
-                    day_style = todo_style;
-                }
-                let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
-                if let Some(c) = self.get_by_date(d) {
-                    printer.with_style(day_style, |p| {
-                        p.print(coords, &format!("{:^3}", c));
-                    });
-                } else {
-                    printer.with_style(future_style, |p| {
-                        p.print(coords, &format!("{:^3}", CONFIGURATION.future_chr));
-                    });
-                }
-                //printer.with_style(day_style, |p| {
-                //        p.print(coords, &format!("{:^3}", c));
-                //    } else {
-                //        p.print(coords, &format!("{:^3}", CONFIGURATION.future_chr));
-                //    }
-                //});
+            if self.reached_goal(d) {
+                day_style = goal_reached_style;
+            } else {
+                day_style = todo_style;
             }
+            let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
+            if let Some(c) = self.get_by_date(d) {
+                printer.with_style(day_style, |p| {
+                    p.print(coords, &format!("{:^3}", c));
+                });
+            } else {
+                printer.with_style(future_style, |p| {
+                    p.print(coords, &format!("{:^3}", CONFIGURATION.future_chr));
+                });
+            }
+            i += 1;
         }
     }
     fn required_size(&mut self, _: Vec2) -> Vec2 {
