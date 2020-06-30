@@ -10,6 +10,7 @@ use cursive::{Printer, Vec2};
 use chrono::NaiveDate;
 
 use crate::habit::{Bit, Count, Habit, HabitWrapper};
+use crate::Command;
 use crate::CONFIGURATION;
 
 use serde::{Deserialize, Serialize};
@@ -123,6 +124,24 @@ impl App {
         let mut j = String::new();
         file.read_to_string(&mut j);
         return serde_json::from_str(&j).unwrap();
+    }
+
+    pub fn parse_command(&mut self, input: &str) {
+        let c = Command::from_string(input);
+        match c {
+            Command::Add(name, kind, goal) => {
+                if kind == "count" {
+                    self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0))));
+                    eprintln!("Found COUNT!");
+                } else if kind == "bit" {
+                    self.add_habit(Box::new(Bit::new(name)));
+                    eprintln!("Found BIT!");
+                }
+            }
+            _ => {
+                eprintln!("UNKNOWN COMMAND!");
+            }
+        }
     }
 
     // this function does IO

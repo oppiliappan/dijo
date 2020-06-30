@@ -6,14 +6,17 @@ use lazy_static::lazy_static;
 
 //use cursive::views::{Dialog, EditView, LinearLayout, ListView, SelectView};
 use cursive::theme::{BaseColor, Color};
+use cursive::views::NamedView;
 use cursive::Cursive;
 
 mod habit;
 use crate::habit::{Bit, Count, Habit};
 
 mod app;
+mod command;
 mod theme;
 use crate::app::{App, ViewMode};
+use crate::command::{open_command_window, Command};
 
 mod views;
 
@@ -77,13 +80,13 @@ fn main() {
     // walking.insert_entry(NaiveDate::from_ymd(2020, 5, 14), false.into());
     // walking.insert_entry(NaiveDate::from_ymd(2020, 5, 15), true.into());
 
-    // let mut app = App::new();
     // app.add_habit(Box::new(gymming));
     // app.add_habit(Box::new(reading));
     // app.add_habit(Box::new(walking));
 
     let app = App::load_state();
-    s.add_layer(app);
+    s.add_layer(NamedView::new("Main", app));
+    s.add_global_callback(':', |s| open_command_window(s));
 
     s.set_theme(theme::theme_gen());
     s.run();
