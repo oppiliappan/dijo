@@ -8,3 +8,34 @@ habit:
       |
       `-count:
         `-dates - k,v pairs
+
+habit:
+`-type: bit/count
+`-stats: k,v (dates, bit/count)
+
+Cycle habit type:
+ - n states
+ - cycles through states on prev next events
+ - represent by symbol/char
+ - ser to usize?
+
+Modes:
+ - day mode - shows all days of 1 month
+    * sift months on prev/next
+ - week mode?
+    * aggregate stats for 1 week
+    * show 4 weeks per view
+    * bar graph for count and bit
+
+Command mode:
+ - add command
+ - edit command?
+    * edit <name> <new-type> <new-goal>
+    * edit <name> --goal <new-goal>
+    * edit <name> --type <new-type>
+ - delete command
+    * delete <name>
+    * delete _ (deletes focused?)
+ - chronological nav:
+    * month-prev mprev
+    * month-next mnext
