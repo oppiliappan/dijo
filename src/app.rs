@@ -116,7 +116,7 @@ impl App {
                 0
             }
         };
-        Vec2::new(width, height)
+        Vec2::new(width, height + 2)
     }
 
     pub fn load_state() -> Self {
@@ -164,7 +164,7 @@ impl View for App {
             i.draw(&printer.offset(offset).focused(self.focus == idx));
             offset = offset.map_x(|x| x + CONFIGURATION.view_width);
         }
-        offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 1);
+        offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 3);
         printer.print(offset, &self.status());
     }
 
@@ -186,7 +186,7 @@ impl View for App {
                 0
             }
         };
-        Vec2::new(width, height)
+        Vec2::new(width, height + 2)
     }
 
     fn take_focus(&mut self, _: Direction) -> bool {
