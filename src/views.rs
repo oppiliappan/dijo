@@ -33,15 +33,22 @@ where
         let todo_style = Style::from(CONFIGURATION.todo_color);
         let future_style = Style::from(CONFIGURATION.future_color);
 
+        let goal_reached_today = self.reached_goal(Local::now().naive_utc().date());
+        if goal_reached_today {
+            printer.with_style(goal_reached_style, |p| p.print((0, 0), "o"));
+        } else {
+            printer.with_style(todo_style, |p| p.print((0, 0), "x"));
+        }
+
         printer.with_style(
             if !printer.focused {
                 future_style
             } else {
-                goal_reached_style
+                Style::none()
             },
             |p| {
                 p.print(
-                    (0, 0),
+                    (2, 0),
                     &format!("{:width$}", self.name(), width = CONFIGURATION.view_width),
                 )
             },
