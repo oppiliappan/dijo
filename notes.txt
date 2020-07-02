@@ -39,3 +39,8 @@ Command mode:
  - chronological nav:
     * month-prev mprev
     * month-next mnext
+
+Undo-tree:
+ - store app states in memory
+ - should store diffs? or entire state?
+ - ideal undo depth limit?
