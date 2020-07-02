@@ -7,7 +7,7 @@ use cursive::event::{Event, EventResult, Key};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
-use chrono::NaiveDate;
+use chrono::{Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Habit, HabitWrapper};
 use crate::Command;
@@ -28,6 +28,8 @@ impl std::default::Default for ViewMode {
     }
 }
 
+struct StatusLine(String, String);
+
 #[derive(Serialize, Deserialize)]
 pub struct App {
     habits: Vec<Box<dyn HabitWrapper>>,
@@ -37,6 +39,9 @@ pub struct App {
 
     #[serde(skip)]
     view_mode: ViewMode,
+
+    #[serde(skip)]
+    view_month_offset: u32,
 }
 
 impl App {
@@ -45,6 +50,7 @@ impl App {
             habits: vec![],
             view_mode: ViewMode::Day,
             focus: 0,
+            view_month_offset: 0,
         };
     }
 
@@ -55,6 +61,22 @@ impl App {
     pub fn set_mode(&mut self, set_mode: ViewMode) {
         if set_mode != self.view_mode {
             self.view_mode = set_mode;
+        }
+    }
+
+    pub fn sift_backward(&mut self) {
+        self.view_month_offset += 1;
+        for v in self.habits.iter_mut() {
+            v.set_view_month_offset(self.view_month_offset);
+        }
+    }
+
+    pub fn sift_forward(&mut self) {
+        if self.view_month_offset > 0 {
+            self.view_month_offset -= 1;
+            for v in self.habits.iter_mut() {
+                v.set_view_month_offset(self.view_month_offset);
+            }
         }
     }
 
@@ -89,13 +111,30 @@ impl App {
         }
     }
 
-    fn status(&self) -> String {
+    fn status(&self) -> StatusLine {
         let today = chrono::Local::now().naive_utc().date();
         let remaining = self.habits.iter().map(|h| h.remaining(today)).sum::<u32>();
         let total = self.habits.iter().map(|h| h.total()).sum::<u32>();
         let completed = total - remaining;
 
-        return format!("{} completed, {} remaining", completed, remaining);
+        let timestamp = if self.view_month_offset == 0 {
+            format!(
+                "{:>width$}",
+                Local::now().date().format("%d/%b/%y"),
+                width = CONFIGURATION.view_width * CONFIGURATION.grid_width
+            )
+        } else {
+            format!(
+                "{:>width$}",
+                format!("{} months ago", self.view_month_offset),
+                width = CONFIGURATION.view_width * CONFIGURATION.grid_width
+            )
+        };
+
+        StatusLine {
+            0: format!("Today: {} completed, {} remaining", completed, remaining),
+            1: timestamp,
+        }
     }
 
     fn max_size(&self) -> Vec2 {
@@ -132,12 +171,12 @@ impl App {
             Command::Add(name, kind, goal) => {
                 if kind == "count" {
                     self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0))));
-                    eprintln!("Found COUNT!");
                 } else if kind == "bit" {
                     self.add_habit(Box::new(Bit::new(name)));
-                    eprintln!("Found BIT!");
                 }
             }
+            Command::MonthNext => self.sift_forward(),
+            Command::MonthPrev => self.sift_backward(),
             _ => {
                 eprintln!("UNKNOWN COMMAND!");
             }
@@ -162,31 +201,35 @@ impl View for App {
                 offset = offset.map_y(|y| y + CONFIGURATION.view_height).map_x(|_| 0);
             }
             i.draw(&printer.offset(offset).focused(self.focus == idx));
-            offset = offset.map_x(|x| x + CONFIGURATION.view_width);
+            offset = offset.map_x(|x| x + CONFIGURATION.view_width + 2);
         }
-        offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 3);
-        printer.print(offset, &self.status());
+
+        offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 2);
+        printer.print(offset, &self.status().1); // right
+        printer.print(offset, &self.status().0); // left
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {
         let grid_width = CONFIGURATION.grid_width;
+        let view_width = CONFIGURATION.view_width;
+        let view_height = CONFIGURATION.view_height;
         let width = {
             if self.habits.len() > 0 {
-                grid_width * CONFIGURATION.view_width
+                grid_width * view_width
             } else {
                 0
             }
         };
         let height = {
             if self.habits.len() > 0 {
-                (CONFIGURATION.view_height as f64
-                    * (self.habits.len() as f64 / grid_width as f64).ceil())
+                (view_height as f64 * (self.habits.len() as f64 / grid_width as f64).ceil())
                     as usize
+                    + 2 // to acoomodate statusline and commandline
             } else {
                 0
             }
         };
-        Vec2::new(width, height + 2)
+        Vec2::new(width, height)
     }
 
     fn take_focus(&mut self, _: Direction) -> bool {
@@ -234,6 +277,14 @@ impl View for App {
             Event::Char('q') => {
                 self.save_state();
                 return EventResult::with_cb(|s| s.quit());
+            }
+            Event::CtrlChar('f') => {
+                self.sift_forward();
+                return EventResult::Consumed(None);
+            }
+            Event::CtrlChar('b') => {
+                self.sift_backward();
+                return EventResult::Consumed(None);
             }
             _ => self.habits[self.focus].on_event(e),
         }
