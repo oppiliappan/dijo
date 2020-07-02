@@ -18,6 +18,8 @@ fn call_on_app(s: &mut Cursive, input: &str) {
 
 pub enum Command {
     Add(String, String, Option<u32>),
+    MonthPrev,
+    MonthNext,
     Delete,
     Blank,
 }
@@ -43,6 +45,8 @@ impl Command {
                     goal,
                 );
             }
+            "mprev" | "month-prev" => return Command::MonthPrev,
+            "mnext" | "month-next" => return Command::MonthNext,
             _ => return Command::Blank,
         }
     }
