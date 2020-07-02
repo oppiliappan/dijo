@@ -51,6 +51,8 @@ pub trait Habit {
     fn remaining(&self, date: NaiveDate) -> u32;
     fn total(&self) -> u32;
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
+    fn set_view_month_offset(&mut self, offset: u32);
+    fn view_month_offset(&self) -> u32;
 }
 
 #[typetag::serde(tag = "type")]
@@ -62,6 +64,8 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn on_event(&mut self, event: Event) -> EventResult;
     fn required_size(&mut self, _: Vec2) -> Vec2;
     fn take_focus(&mut self, _: Direction) -> bool;
+    fn set_view_month_offset(&mut self, offset: u32);
+    fn view_month_offset(&self) -> u32;
 }
 
 macro_rules! auto_habit_impl {
@@ -89,6 +93,12 @@ macro_rules! auto_habit_impl {
             fn take_focus(&mut self, d: Direction) -> bool {
                 ShadowView::take_focus(self, d)
             }
+            fn set_view_month_offset(&mut self, offset: u32) {
+                Habit::set_view_month_offset(self, offset)
+            }
+            fn view_month_offset(&self) -> u32 {
+                Habit::view_month_offset(self)
+            }
         }
     };
 }
@@ -101,6 +111,9 @@ pub struct Count {
     name: String,
     stats: HashMap<NaiveDate, u32>,
     goal: u32,
+
+    #[serde(skip)]
+    view_month_offset: u32,
 }
 
 impl Count {
@@ -109,6 +122,7 @@ impl Count {
             name: name.as_ref().to_owned(),
             stats: HashMap::new(),
             goal,
+            view_month_offset: 0,
         };
     }
 }
@@ -169,6 +183,12 @@ impl Habit for Count {
             self.insert_entry(date, 1);
         }
     }
+    fn set_view_month_offset(&mut self, offset: u32) {
+        self.view_month_offset = offset;
+    }
+    fn view_month_offset(&self) -> u32 {
+        self.view_month_offset
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -176,6 +196,9 @@ pub struct Bit {
     name: String,
     stats: HashMap<NaiveDate, CustomBool>,
     goal: CustomBool,
+
+    #[serde(skip)]
+    view_month_offset: u32,
 }
 
 impl Bit {
@@ -184,6 +207,7 @@ impl Bit {
             name: name.as_ref().to_owned(),
             stats: HashMap::new(),
             goal: CustomBool(true),
+            view_month_offset: 0,
         };
     }
 }
@@ -233,5 +257,11 @@ impl Habit for Bit {
         } else {
             self.insert_entry(date, CustomBool(true));
         }
+    }
+    fn set_view_month_offset(&mut self, offset: u32) {
+        self.view_month_offset = offset;
+    }
+    fn view_month_offset(&self) -> u32 {
+        self.view_month_offset
     }
 }
