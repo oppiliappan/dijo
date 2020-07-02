@@ -5,7 +5,7 @@ use cursive::view::View;
 use cursive::{Printer, Vec2};
 
 use chrono::prelude::*;
-use chrono::{Local, NaiveDate};
+use chrono::{Duration, Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Habit, TrackEvent};
 use crate::CONFIGURATION;
@@ -25,7 +25,13 @@ where
     T::HabitType: std::fmt::Display,
 {
     fn draw(&self, printer: &Printer) {
-        let now = Local::now();
+        let now = if self.view_month_offset() == 0 {
+            Local::today()
+        } else {
+            Local::today()
+                .checked_sub_signed(Duration::weeks(4 * self.view_month_offset() as i64))
+                .unwrap()
+        };
         let year = now.year();
         let month = now.month();
 
@@ -35,9 +41,9 @@ where
 
         let goal_reached_today = self.reached_goal(Local::now().naive_utc().date());
         if goal_reached_today {
-            printer.with_style(goal_reached_style, |p| p.print((0, 0), "o"));
+            printer.with_style(goal_reached_style, |p| p.print((0, 0), "[x]"));
         } else {
-            printer.with_style(todo_style, |p| p.print((0, 0), "x"));
+            printer.with_style(todo_style, |p| p.print((0, 0), "[ ]"));
         }
 
         printer.with_style(
@@ -48,7 +54,7 @@ where
             },
             |p| {
                 p.print(
-                    (2, 0),
+                    (4, 0),
                     &format!("{:width$}", self.name(), width = CONFIGURATION.view_width),
                 )
             },
@@ -75,6 +81,7 @@ where
             i += 1;
         }
     }
+
     fn required_size(&mut self, _: Vec2) -> Vec2 {
         (25, 6).into()
     }
