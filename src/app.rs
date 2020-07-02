@@ -254,18 +254,9 @@ impl View for App {
                 self.set_focus(Absolute::Down);
                 return EventResult::Consumed(None);
             }
-            Event::Char('a') => {
-                let mut gymming = Count::new("gym", 5);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 11), 7);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 12), 8);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 13), 9);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 14), 10);
-                gymming.insert_entry(NaiveDate::from_ymd(2020, 4, 15), 11);
-                self.add_habit(Box::new(gymming));
-                return EventResult::Consumed(None);
-            }
             Event::Char('d') => {
                 self.habits.remove(self.focus);
+                self.focus = 0;
                 return EventResult::Consumed(None);
             }
             Event::Char('w') => {
