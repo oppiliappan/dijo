@@ -21,6 +21,7 @@ pub enum Command {
     MonthPrev,
     MonthNext,
     Delete(String),
+    Quit,
     Blank,
 }
 
@@ -53,6 +54,7 @@ impl Command {
             }
             "mprev" | "month-prev" => return Command::MonthPrev,
             "mnext" | "month-next" => return Command::MonthNext,
+            "q" | "quit" => return Command::Quit,
             _ => return Command::Blank,
         }
     }

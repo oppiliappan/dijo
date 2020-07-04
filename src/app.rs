@@ -192,6 +192,12 @@ impl App {
             }
             Command::MonthNext => self.sift_forward(),
             Command::MonthPrev => self.sift_backward(),
+
+            // we can get away with calling an event here,
+            // saves us some writing
+            Command::Quit => {
+                self.on_event(Event::Char('q'));
+            }
             _ => {
                 eprintln!("UNKNOWN COMMAND!");
             }
@@ -284,7 +290,7 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::Char('q') => {
-                // self.save_state();
+                self.save_state();
                 return EventResult::with_cb(|s| s.quit());
             }
 
@@ -304,10 +310,7 @@ impl View for App {
              * s down to the focused Habit We sift back to today
              * before performing any action, "refocusing" the cursor
              * */
-            _ => {
-                self.set_view_month_offset(0);
-                self.habits[self.focus].on_event(e)
-            }
+            _ => self.habits[self.focus].on_event(e),
         }
     }
 }
