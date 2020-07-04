@@ -66,6 +66,7 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn take_focus(&mut self, _: Direction) -> bool;
     fn set_view_month_offset(&mut self, offset: u32);
     fn view_month_offset(&self) -> u32;
+    fn get_name(&self) -> String;
 }
 
 macro_rules! auto_habit_impl {
@@ -98,6 +99,9 @@ macro_rules! auto_habit_impl {
             }
             fn view_month_offset(&self) -> u32 {
                 Habit::view_month_offset(self)
+            }
+            fn get_name(&self) -> String {
+                Habit::name(self)
             }
         }
     };

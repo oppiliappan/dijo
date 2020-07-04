@@ -17,10 +17,10 @@ fn call_on_app(s: &mut Cursive, input: &str) {
 }
 
 pub enum Command {
-    Add(String, String, Option<u32>),
+    Add(String, String, Option<u32>), // habit name, habit type, optional goal
     MonthPrev,
     MonthNext,
-    Delete,
+    Delete(String),
     Blank,
 }
 
@@ -44,6 +44,12 @@ impl Command {
                     args.get_mut(1).unwrap().to_string(),
                     goal,
                 );
+            }
+            "delete" | "d" => {
+                if args.len() < 1 {
+                    return Command::Blank;
+                }
+                return Command::Delete(args[0].to_string());
             }
             "mprev" | "month-prev" => return Command::MonthPrev,
             "mnext" | "month-next" => return Command::MonthNext,

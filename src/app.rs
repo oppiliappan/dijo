@@ -58,9 +58,20 @@ impl App {
         self.habits.push(h);
     }
 
+    pub fn delete_by_name(&mut self, name: &str) {
+        self.habits.retain(|h| h.get_name() != name);
+    }
+
     pub fn set_mode(&mut self, set_mode: ViewMode) {
         if set_mode != self.view_mode {
             self.view_mode = set_mode;
+        }
+    }
+
+    pub fn set_view_month_offset(&mut self, offset: u32) {
+        self.view_month_offset = offset;
+        for v in self.habits.iter_mut() {
+            v.set_view_month_offset(offset);
         }
     }
 
@@ -175,6 +186,10 @@ impl App {
                     self.add_habit(Box::new(Bit::new(name)));
                 }
             }
+            Command::Delete(name) => {
+                self.delete_by_name(&name);
+                self.focus = 0;
+            }
             Command::MonthNext => self.sift_forward(),
             Command::MonthPrev => self.sift_backward(),
             _ => {
@@ -255,8 +270,11 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::Char('d') => {
+                if self.habits.is_empty() {
+                    return EventResult::Consumed(None);
+                }
                 self.habits.remove(self.focus);
-                self.focus = 0;
+                self.focus = self.focus.checked_sub(1).unwrap_or(0);
                 return EventResult::Consumed(None);
             }
             Event::Char('w') => {
@@ -266,9 +284,13 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::Char('q') => {
-                self.save_state();
+                // self.save_state();
                 return EventResult::with_cb(|s| s.quit());
             }
+
+            /* We want sifting to be an app level function,
+             * that later trickles down into each habit
+             * */
             Event::CtrlChar('f') => {
                 self.sift_forward();
                 return EventResult::Consumed(None);
@@ -277,7 +299,15 @@ impl View for App {
                 self.sift_backward();
                 return EventResult::Consumed(None);
             }
-            _ => self.habits[self.focus].on_event(e),
+
+            /* Every keybind that is not caught by App trickle
+             * s down to the focused Habit We sift back to today
+             * before performing any action, "refocusing" the cursor
+             * */
+            _ => {
+                self.set_view_month_offset(0);
+                self.habits[self.focus].on_event(e)
+            }
         }
     }
 }
