@@ -1,4 +1,6 @@
 use cursive::theme::{BaseColor, Color};
+use directories::ProjectDirs;
+use std::path::{Path, PathBuf};
 
 pub struct AppConfig {
     pub true_chr: char,
@@ -28,5 +30,15 @@ pub fn load_configuration_file() -> AppConfig {
         reached_color: Color::Dark(BaseColor::Cyan),
         todo_color: Color::Dark(BaseColor::Magenta),
         future_color: Color::Light(BaseColor::Black),
+    };
+}
+
+pub fn data_file() -> PathBuf {
+    if let Some(proj_dirs) = ProjectDirs::from("rs", "nerdypepper", "dijo") {
+        let mut data_file = PathBuf::from(proj_dirs.data_dir());
+        data_file.push("habit_record.json");
+        return data_file;
+    } else {
+        panic!("Invalid home directory!")
     };
 }

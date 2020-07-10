@@ -1,5 +1,5 @@
 use std::f64;
-use std::fs::File;
+use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 
 use cursive::direction::{Absolute, Direction};
@@ -10,6 +10,7 @@ use cursive::{Printer, Vec2};
 use chrono::{Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Habit, HabitWrapper};
+use crate::utils;
 use crate::Command;
 use crate::CONFIGURATION;
 
@@ -173,10 +174,26 @@ impl App {
     }
 
     pub fn load_state() -> Self {
-        let mut file = File::open("foo.txt").unwrap();
-        let mut j = String::new();
-        file.read_to_string(&mut j);
-        return serde_json::from_str(&j).unwrap();
+        let data_file = utils::data_file();
+        if let Ok(ref mut file) = File::open(data_file) {
+            let mut j = String::new();
+            file.read_to_string(&mut j);
+            return serde_json::from_str(&j).unwrap();
+        } else {
+            Self::new()
+        }
+    }
+
+    // this function does IO
+    // TODO: convert this into non-blocking async function
+    fn save_state(&self) {
+        let j = serde_json::to_string_pretty(&self).unwrap();
+        let data_file = utils::data_file();
+
+        match OpenOptions::new().write(true).create(true).open(data_file) {
+            Ok(ref mut file) => file.write_all(j.as_bytes()).unwrap(),
+            Err(_) => panic!("Unable to write!"),
+        };
     }
 
     pub fn parse_command(&mut self, input: &str) {
@@ -200,14 +217,6 @@ impl App {
                 eprintln!("UNKNOWN COMMAND!");
             }
         }
-    }
-
-    // this function does IO
-    // TODO: convert this into non-blocking async function
-    fn save_state(&self) {
-        let j = serde_json::to_string_pretty(&self).unwrap();
-        let mut file = File::create("foo.txt").unwrap();
-        file.write_all(j.as_bytes()).unwrap();
     }
 }
 
@@ -313,6 +322,9 @@ impl View for App {
              * before performing any action, "refocusing" the cursor
              * */
             _ => {
+                if self.habits.is_empty() {
+                    return EventResult::Ignored;
+                }
                 self.set_view_month_offset(0);
                 self.habits[self.focus].on_event(e)
             }
