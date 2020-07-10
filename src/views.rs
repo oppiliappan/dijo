@@ -1,6 +1,6 @@
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult, Key};
-use cursive::theme::Style;
+use cursive::theme::{Effect, Style};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
@@ -39,24 +39,26 @@ where
         let todo_style = Style::from(CONFIGURATION.todo_color);
         let future_style = Style::from(CONFIGURATION.future_color);
 
-        let goal_reached_today = self.reached_goal(Local::now().naive_utc().date());
-        if goal_reached_today {
-            printer.with_style(goal_reached_style, |p| p.print((0, 0), "[x]"));
-        } else {
-            printer.with_style(todo_style, |p| p.print((0, 0), "[ ]"));
-        }
+        let done_today_style = Style::from(Effect::Strikethrough);
+
+        let goal_status =
+            self.view_month_offset() == 0 && self.reached_goal(Local::now().naive_utc().date());
 
         printer.with_style(
-            if !printer.focused {
-                future_style
-            } else {
-                Style::none()
-            },
+            Style::merge(&[
+                if goal_status {
+                    done_today_style
+                } else {
+                    Style::none()
+                },
+                if !printer.focused {
+                    future_style
+                } else {
+                    Style::none()
+                },
+            ]),
             |p| {
-                p.print(
-                    (4, 0),
-                    &format!("{:width$}", self.name(), width = CONFIGURATION.view_width),
-                )
+                p.print((0, 0), &format!(" {} ", self.name()));
             },
         );
 
