@@ -39,7 +39,7 @@ where
         let todo_style = Style::from(CONFIGURATION.todo_color);
         let future_style = Style::from(CONFIGURATION.future_color);
 
-        let done_today_style = Style::from(Effect::Strikethrough);
+        let strikethrough = Style::from(Effect::Strikethrough);
 
         let goal_status =
             self.view_month_offset() == 0 && self.reached_goal(Local::now().naive_utc().date());
@@ -47,7 +47,7 @@ where
         printer.with_style(
             Style::merge(&[
                 if goal_status {
-                    done_today_style
+                    strikethrough
                 } else {
                     Style::none()
                 },
