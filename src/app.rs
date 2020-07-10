@@ -32,8 +32,10 @@ struct StatusLine(String, String);
 
 #[derive(Serialize, Deserialize)]
 pub struct App {
+    // holds app data
     habits: Vec<Box<dyn HabitWrapper>>,
 
+    // serialization of the rest can be skipped
     #[serde(skip)]
     focus: usize,
 
@@ -135,6 +137,7 @@ impl App {
                 width = CONFIGURATION.view_width * CONFIGURATION.grid_width
             )
         } else {
+            let months = self.view_month_offset;
             format!(
                 "{:>width$}",
                 format!("{} months ago", self.view_month_offset),
@@ -190,14 +193,9 @@ impl App {
                 self.delete_by_name(&name);
                 self.focus = 0;
             }
+            Command::Quit => self.save_state(),
             Command::MonthNext => self.sift_forward(),
             Command::MonthPrev => self.sift_backward(),
-
-            // we can get away with calling an event here,
-            // saves us some writing
-            Command::Quit => {
-                self.on_event(Event::Char('q'));
-            }
             _ => {
                 eprintln!("UNKNOWN COMMAND!");
             }
@@ -297,20 +295,27 @@ impl View for App {
             /* We want sifting to be an app level function,
              * that later trickles down into each habit
              * */
-            Event::CtrlChar('f') => {
+            Event::Char(']') => {
                 self.sift_forward();
                 return EventResult::Consumed(None);
             }
-            Event::CtrlChar('b') => {
+            Event::Char('[') => {
                 self.sift_backward();
                 return EventResult::Consumed(None);
             }
+            Event::Char('}') => {
+                self.set_view_month_offset(0);
+                return EventResult::Consumed(None);
+            }
 
-            /* Every keybind that is not caught by App trickle
-             * s down to the focused Habit We sift back to today
+            /* Every keybind that is not caught by App trickles
+             * down to the focused Habit We sift back to today
              * before performing any action, "refocusing" the cursor
              * */
-            _ => self.habits[self.focus].on_event(e),
+            _ => {
+                self.set_view_month_offset(0);
+                self.habits[self.focus].on_event(e)
+            }
         }
     }
 }

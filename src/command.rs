@@ -13,9 +13,19 @@ fn call_on_app(s: &mut Cursive, input: &str) {
     s.call_on_name("Main", |view: &mut App| {
         view.parse_command(input);
     });
+
+    // special command that requires access to
+    // our main cursive object, has to be parsed again
+    // here
+    // TODO: fix this somehow
+    if Command::from_string(input) == Command::Quit {
+        s.quit();
+    }
+
     s.pop_layer();
 }
 
+#[derive(PartialEq)]
 pub enum Command {
     Add(String, String, Option<u32>), // habit name, habit type, optional goal
     MonthPrev,
