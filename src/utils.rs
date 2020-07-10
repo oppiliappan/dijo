@@ -1,5 +1,6 @@
 use cursive::theme::{BaseColor, Color};
 use directories::ProjectDirs;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 pub struct AppConfig {
@@ -36,6 +37,7 @@ pub fn load_configuration_file() -> AppConfig {
 pub fn data_file() -> PathBuf {
     if let Some(proj_dirs) = ProjectDirs::from("rs", "nerdypepper", "dijo") {
         let mut data_file = PathBuf::from(proj_dirs.data_dir());
+        fs::create_dir_all(&data_file);
         data_file.push("habit_record.json");
         return data_file;
     } else {
