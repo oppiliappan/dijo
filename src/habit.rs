@@ -15,6 +15,19 @@ pub enum TrackEvent {
     Decrement,
 }
 
+#[derive(Debug, PartialEq, Serialize, Deserialize)]
+pub enum ViewMode {
+    Day,
+    Month,
+    Year,
+}
+
+impl std::default::Default for ViewMode {
+    fn default() -> Self {
+        ViewMode::Day
+    }
+}
+
 #[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct CustomBool(bool);
 
@@ -51,8 +64,12 @@ pub trait Habit {
     fn remaining(&self, date: NaiveDate) -> u32;
     fn total(&self) -> u32;
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
+
     fn set_view_month_offset(&mut self, offset: u32);
     fn view_month_offset(&self) -> u32;
+
+    fn set_view_mode(&mut self, mode: ViewMode);
+    fn view_mode(&self) -> ViewMode;
 }
 
 #[typetag::serde(tag = "type")]
@@ -64,9 +81,13 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn on_event(&mut self, event: Event) -> EventResult;
     fn required_size(&mut self, _: Vec2) -> Vec2;
     fn take_focus(&mut self, _: Direction) -> bool;
+    fn get_name(&self) -> String;
+
     fn set_view_month_offset(&mut self, offset: u32);
     fn view_month_offset(&self) -> u32;
-    fn get_name(&self) -> String;
+
+    fn set_view_mode(&mut self, mode: ViewMode);
+    fn view_mode(&self) -> ViewMode;
 }
 
 macro_rules! auto_habit_impl {
@@ -97,11 +118,17 @@ macro_rules! auto_habit_impl {
             fn set_view_month_offset(&mut self, offset: u32) {
                 Habit::set_view_month_offset(self, offset)
             }
+            fn get_name(&self) -> String {
+                Habit::name(self)
+            }
             fn view_month_offset(&self) -> u32 {
                 Habit::view_month_offset(self)
             }
-            fn get_name(&self) -> String {
-                Habit::name(self)
+            fn set_view_mode(&mut self, mode: ViewMode) {
+                Habit::set_view_mode(&mut self, mode: ViewMode)
+            }
+            fn view_mode(&self) -> ViewMode {
+                Habit::view_mode(self)
             }
         }
     };
@@ -118,6 +145,9 @@ pub struct Count {
 
     #[serde(skip)]
     view_month_offset: u32,
+
+    #[serde(skip)]
+    view_mode: ViewMode,
 }
 
 impl Count {
@@ -127,6 +157,7 @@ impl Count {
             stats: HashMap::new(),
             goal,
             view_month_offset: 0,
+            view_mode: ViewMode::Day,
         };
     }
 }
@@ -193,6 +224,12 @@ impl Habit for Count {
     fn view_month_offset(&self) -> u32 {
         self.view_month_offset
     }
+    fn set_view_mode(&mut self, mode: ViewMode) {
+        self.view_mode = mode;
+    }
+    fn view_mode(&self) -> ViewMode {
+        self.view_mode
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -203,6 +240,9 @@ pub struct Bit {
 
     #[serde(skip)]
     view_month_offset: u32,
+
+    #[serde(skip)]
+    view_mode: ViewMode,
 }
 
 impl Bit {
@@ -212,6 +252,7 @@ impl Bit {
             stats: HashMap::new(),
             goal: CustomBool(true),
             view_month_offset: 0,
+            view_mode: ViewMode::Day,
         };
     }
 }
@@ -267,5 +308,11 @@ impl Habit for Bit {
     }
     fn view_month_offset(&self) -> u32 {
         self.view_month_offset
+    }
+    fn set_view_mode(&mut self, mode: ViewMode) {
+        self.view_mode = mode;
+    }
+    fn view_mode(&self) -> ViewMode {
+        self.view_mode
     }
 }
