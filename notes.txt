@@ -40,6 +40,12 @@ Command mode:
     * month-prev mprev
     * month-next mnext
 
+Interface:
+ - move view port if focused view goes outside bounds
+ - tab completion for command mode? requires lex table
+ - move command window to bottom, styling
+ - prefix command window with `:`
+
 Undo-tree:
  - store app states in memory
  - should store diffs? or entire state?
