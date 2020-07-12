@@ -1,3 +1,4 @@
+use std::default::Default;
 use std::f64;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
@@ -14,21 +15,20 @@ use crate::utils;
 use crate::Command;
 use crate::CONFIGURATION;
 
-use serde::{Deserialize, Serialize};
-
 struct StatusLine(String, String);
 
-#[derive(Serialize, Deserialize)]
 pub struct App {
     // holds app data
     habits: Vec<Box<dyn HabitWrapper>>,
 
-    // serialization of the rest can be skipped
-    #[serde(skip)]
     focus: usize,
-
-    #[serde(skip)]
     view_month_offset: u32,
+}
+
+impl Default for App {
+    fn default() -> Self {
+        App::new()
+    }
 }
 
 impl App {
@@ -161,7 +161,10 @@ impl App {
         if let Ok(ref mut file) = File::open(data_file) {
             let mut j = String::new();
             file.read_to_string(&mut j);
-            return serde_json::from_str(&j).unwrap();
+            return App {
+                habits: serde_json::from_str(&j).unwrap(),
+                ..Default::default()
+            };
         } else {
             Self::new()
         }
@@ -170,10 +173,15 @@ impl App {
     // this function does IO
     // TODO: convert this into non-blocking async function
     fn save_state(&self) {
-        let j = serde_json::to_string_pretty(&self).unwrap();
+        let j = serde_json::to_string_pretty(&self.habits).unwrap();
         let data_file = utils::data_file();
 
-        match OpenOptions::new().write(true).create(true).open(data_file) {
+        match OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(data_file)
+        {
             Ok(ref mut file) => file.write_all(j.as_bytes()).unwrap(),
             Err(_) => panic!("Unable to write!"),
         };
@@ -274,7 +282,8 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::Char('w') => {
-                let j = serde_json::to_string_pretty(&self).unwrap();
+                // helper bind to test write to file
+                let j = serde_json::to_string_pretty(&self.habits).unwrap();
                 let mut file = File::create("foo.txt").unwrap();
                 file.write_all(j.as_bytes()).unwrap();
                 return EventResult::Consumed(None);
