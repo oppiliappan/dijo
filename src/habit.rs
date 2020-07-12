@@ -15,7 +15,7 @@ pub enum TrackEvent {
     Decrement,
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum ViewMode {
     Day,
     Month,
@@ -115,17 +115,17 @@ macro_rules! auto_habit_impl {
             fn take_focus(&mut self, d: Direction) -> bool {
                 ShadowView::take_focus(self, d)
             }
-            fn set_view_month_offset(&mut self, offset: u32) {
-                Habit::set_view_month_offset(self, offset)
-            }
             fn get_name(&self) -> String {
                 Habit::name(self)
+            }
+            fn set_view_month_offset(&mut self, offset: u32) {
+                Habit::set_view_month_offset(self, offset)
             }
             fn view_month_offset(&self) -> u32 {
                 Habit::view_month_offset(self)
             }
             fn set_view_mode(&mut self, mode: ViewMode) {
-                Habit::set_view_mode(&mut self, mode: ViewMode)
+                Habit::set_view_mode(self, mode)
             }
             fn view_mode(&self) -> ViewMode {
                 Habit::view_mode(self)
