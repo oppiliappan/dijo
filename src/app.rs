@@ -7,9 +7,9 @@ use cursive::event::{Event, EventResult, Key};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
-use chrono::{Local, NaiveDate};
+use chrono::Local;
 
-use crate::habit::{Bit, Count, Habit, HabitWrapper, ViewMode};
+use crate::habit::{Bit, Count, HabitWrapper, ViewMode};
 use crate::utils;
 use crate::Command;
 use crate::CONFIGURATION;

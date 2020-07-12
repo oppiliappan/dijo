@@ -1,12 +1,3 @@
-use std::collections::HashMap;
-
-use chrono::NaiveDate;
-use serde::{Deserialize, Serialize};
-
-use cursive::direction::Direction;
-use cursive::event::{Event, EventResult};
-use cursive::{Printer, Vec2};
-
 mod traits;
 pub use traits::{Habit, HabitWrapper};
 

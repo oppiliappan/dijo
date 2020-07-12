@@ -1,7 +1,7 @@
 use cursive::theme::{BaseColor, Color};
 use directories::ProjectDirs;
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 pub struct AppConfig {
     pub true_chr: char,
