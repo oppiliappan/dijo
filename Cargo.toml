@@ -14,7 +14,7 @@ typetag = "0.1.4"
 directories = "3.0.1"
 
 [dependencies.cursive]
-version = "0.14"
+version = "0.15"
 features = ["crossterm-backend"]
 
 [dependencies.chrono]
