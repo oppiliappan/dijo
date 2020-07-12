@@ -62,7 +62,7 @@ pub trait Habit {
     fn insert_entry(&mut self, date: NaiveDate, val: Self::HabitType);
     fn reached_goal(&self, date: NaiveDate) -> bool;
     fn remaining(&self, date: NaiveDate) -> u32;
-    fn total(&self) -> u32;
+    fn goal(&self) -> u32;
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
 
     fn set_view_month_offset(&mut self, offset: u32);
@@ -75,7 +75,7 @@ pub trait Habit {
 #[typetag::serde(tag = "type")]
 pub trait HabitWrapper: erased_serde::Serialize {
     fn remaining(&self, date: NaiveDate) -> u32;
-    fn total(&self) -> u32;
+    fn goal(&self) -> u32;
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
     fn draw(&self, printer: &Printer);
     fn on_event(&mut self, event: Event) -> EventResult;
@@ -97,8 +97,8 @@ macro_rules! auto_habit_impl {
             fn remaining(&self, date: NaiveDate) -> u32 {
                 Habit::remaining(self, date)
             }
-            fn total(&self) -> u32 {
-                Habit::total(self)
+            fn goal(&self) -> u32 {
+                Habit::goal(self)
             }
             fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
                 Habit::modify(self, date, event);
@@ -199,7 +199,7 @@ impl Habit for Count {
             }
         }
     }
-    fn total(&self) -> u32 {
+    fn goal(&self) -> u32 {
         return self.goal;
     }
     fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
@@ -293,7 +293,7 @@ impl Habit for Bit {
             return 1;
         }
     }
-    fn total(&self) -> u32 {
+    fn goal(&self) -> u32 {
         return 1;
     }
     fn modify(&mut self, date: NaiveDate, _: TrackEvent) {
