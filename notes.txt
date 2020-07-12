@@ -29,10 +29,14 @@ Modes:
 
 Command mode:
  - add command
+    * add <name> <type> <goal>
+    * add <name> --type <type> [--goal <goal>]
+    * interactive add command via questionnaire?
  - edit command?
     * edit <name> <new-type> <new-goal>
     * edit <name> --goal <new-goal>
     * edit <name> --type <new-type>
+    * interactive edit command via questionnaire?
  - delete command
     * delete <name>
     * delete _ (deletes focused?)
@@ -50,3 +54,12 @@ Undo-tree:
  - store app states in memory
  - should store diffs? or entire state?
  - ideal undo depth limit?
+
+Auto-trackable habits
+ - allow editing these habits via cli
+ - can track commits, crons
+ - disallow editing these habits via curses
+ - storage
+    * will be mutex with non-auto habits
+    * serialize and save separately each other? [imp]
+ 
