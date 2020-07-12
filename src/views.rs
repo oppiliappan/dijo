@@ -75,7 +75,7 @@ where
                 let completions = weekly_goal - remaining;
                 let full = CONFIGURATION.view_width - 8;
                 let bars_to_fill = (completions * full as u32) / weekly_goal;
-                let percentage = (completions as f64 * 100f64) / weekly_goal as f64;
+                let percentage = (completions as f64 * 100.) / weekly_goal as f64;
                 printer.with_style(future_style, |p| {
                     p.print((4, line_nr), &"―".repeat(full));
                 });
@@ -89,14 +89,15 @@ where
                         future_style
                     },
                     |p| {
-                        p.print((0, line_nr), &format!("{:3.0}% ", percentage));
+                        p.print((0, line_nr), &format!("{:2.0}% ", percentage));
                     },
                 );
             }
         };
+
         let draw_day = |printer: &Printer| {
-            let mut i = 1;
-            while let Some(d) = NaiveDate::from_ymd_opt(year, month, i) {
+            let mut i = 0;
+            while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
                 let day_style;
                 if self.reached_goal(d) {
                     day_style = goal_reached_style;
@@ -116,9 +117,10 @@ where
                 i += 1;
             }
         };
+
         match self.view_mode() {
             ViewMode::Day => draw_day(printer),
-            ViewMode::Month => draw_month(printer),
+            ViewMode::Week => draw_month(printer),
             _ => draw_day(printer),
         };
     }

@@ -287,16 +287,16 @@ impl View for App {
                 if self.habits.is_empty() {
                     return EventResult::Consumed(None);
                 }
-                if self.habits[self.focus].view_mode() == ViewMode::Month {
+                if self.habits[self.focus].view_mode() == ViewMode::Week {
                     self.set_mode(ViewMode::Day)
                 } else {
-                    self.set_mode(ViewMode::Month)
+                    self.set_mode(ViewMode::Week)
                 }
                 return EventResult::Consumed(None);
             }
             Event::Char('V') => {
                 for habit in self.habits.iter_mut() {
-                    habit.set_view_mode(ViewMode::Month);
+                    habit.set_view_mode(ViewMode::Week);
                 }
                 return EventResult::Consumed(None);
             }

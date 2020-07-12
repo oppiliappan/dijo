@@ -18,6 +18,7 @@ pub enum TrackEvent {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub enum ViewMode {
     Day,
+    Week,
     Month,
     Year,
 }
