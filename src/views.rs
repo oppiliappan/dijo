@@ -7,7 +7,7 @@ use cursive::{Printer, Vec2};
 use chrono::prelude::*;
 use chrono::{Duration, Local, NaiveDate};
 
-use crate::habit::{Bit, Count, Habit, TrackEvent};
+use crate::habit::{Bit, Count, Habit, TrackEvent, ViewMode};
 
 use crate::CONFIGURATION;
 
@@ -63,37 +63,64 @@ where
             },
         );
 
-        // fn draw_day(&self, p: &Printer) { };
-        // fn draw_month(&self, p: &Printer) {};
-
-        // match self.view_mode() {
-        //     ViewMode::Day => draw_day(self, p),
-        //     ViewMode::Month =>
-        // }
-
-        //let draw_day = |printer: &Printer| {
-        let mut i = 1;
-        while let Some(d) = NaiveDate::from_ymd_opt(year, month, i) {
-            let day_style;
-            if self.reached_goal(d) {
-                day_style = goal_reached_style;
-            } else {
-                day_style = todo_style;
-            }
-            let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
-            if let Some(c) = self.get_by_date(d) {
-                printer.with_style(day_style, |p| {
-                    p.print(coords, &format!("{:^3}", c));
-                });
-            } else {
+        let draw_month = |printer: &Printer| {
+            let days = (1..31)
+                .map(|i| NaiveDate::from_ymd_opt(year, month, i))
+                .flatten() // dates 28-31 may not exist, ignore them if they don't
+                .collect::<Vec<_>>();
+            for (week, line_nr) in days.chunks(7).zip(2..) {
+                let weekly_goal = self.goal() * week.len() as u32;
+                let is_this_week = week.contains(&Local::now().naive_utc().date());
+                let remaining = week.iter().map(|&i| self.remaining(i)).sum::<u32>();
+                let completions = weekly_goal - remaining;
+                let full = CONFIGURATION.view_width - 8;
+                let bars_to_fill = (completions * full as u32) / weekly_goal;
+                let percentage = (completions as f64 * 100f64) / weekly_goal as f64;
                 printer.with_style(future_style, |p| {
-                    p.print(coords, &format!("{:^3}", CONFIGURATION.future_chr));
+                    p.print((4, line_nr), &"―".repeat(full));
                 });
+                printer.with_style(goal_reached_style, |p| {
+                    p.print((4, line_nr), &"―".repeat(bars_to_fill as usize));
+                });
+                printer.with_style(
+                    if is_this_week {
+                        Style::none()
+                    } else {
+                        future_style
+                    },
+                    |p| {
+                        p.print((0, line_nr), &format!("{:3.0}% ", percentage));
+                    },
+                );
             }
-            i += 1;
-        }
-        //};
-        //draw_day(printer);
+        };
+        let draw_day = |printer: &Printer| {
+            let mut i = 1;
+            while let Some(d) = NaiveDate::from_ymd_opt(year, month, i) {
+                let day_style;
+                if self.reached_goal(d) {
+                    day_style = goal_reached_style;
+                } else {
+                    day_style = todo_style;
+                }
+                let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
+                if let Some(c) = self.get_by_date(d) {
+                    printer.with_style(day_style, |p| {
+                        p.print(coords, &format!("{:^3}", c));
+                    });
+                } else {
+                    printer.with_style(future_style, |p| {
+                        p.print(coords, &format!("{:^3}", CONFIGURATION.future_chr));
+                    });
+                }
+                i += 1;
+            }
+        };
+        match self.view_mode() {
+            ViewMode::Day => draw_day(printer),
+            ViewMode::Month => draw_month(printer),
+            _ => draw_day(printer),
+        };
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {

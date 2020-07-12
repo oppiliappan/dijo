@@ -111,7 +111,7 @@ impl App {
     fn status(&self) -> StatusLine {
         let today = chrono::Local::now().naive_utc().date();
         let remaining = self.habits.iter().map(|h| h.remaining(today)).sum::<u32>();
-        let total = self.habits.iter().map(|h| h.total()).sum::<u32>();
+        let total = self.habits.iter().map(|h| h.goal()).sum::<u32>();
         let completed = total - remaining;
 
         let timestamp = if self.view_month_offset == 0 {
@@ -124,7 +124,7 @@ impl App {
             let months = self.view_month_offset;
             format!(
                 "{:>width$}",
-                format!("{} months ago", self.view_month_offset),
+                format!("{} months ago", months),
                 width = CONFIGURATION.view_width * CONFIGURATION.grid_width
             )
         };
@@ -226,7 +226,7 @@ impl View for App {
         let view_height = CONFIGURATION.view_height;
         let width = {
             if self.habits.len() > 0 {
-                grid_width * view_width
+                grid_width * (view_width + 2)
             } else {
                 0
             }
@@ -282,6 +282,29 @@ impl View for App {
             Event::Char('q') => {
                 self.save_state();
                 return EventResult::with_cb(|s| s.quit());
+            }
+            Event::Char('v') => {
+                if self.habits.is_empty() {
+                    return EventResult::Consumed(None);
+                }
+                if self.habits[self.focus].view_mode() == ViewMode::Month {
+                    self.set_mode(ViewMode::Day)
+                } else {
+                    self.set_mode(ViewMode::Month)
+                }
+                return EventResult::Consumed(None);
+            }
+            Event::Char('V') => {
+                for habit in self.habits.iter_mut() {
+                    habit.set_view_mode(ViewMode::Month);
+                }
+                return EventResult::Consumed(None);
+            }
+            Event::Key(Key::Esc) => {
+                for habit in self.habits.iter_mut() {
+                    habit.set_view_mode(ViewMode::Day);
+                }
+                return EventResult::Consumed(None);
             }
 
             /* We want sifting to be an app level function,
