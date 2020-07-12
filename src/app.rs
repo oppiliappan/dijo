@@ -9,25 +9,12 @@ use cursive::{Printer, Vec2};
 
 use chrono::{Local, NaiveDate};
 
-use crate::habit::{Bit, Count, Habit, HabitWrapper};
+use crate::habit::{Bit, Count, Habit, HabitWrapper, ViewMode};
 use crate::utils;
 use crate::Command;
 use crate::CONFIGURATION;
 
 use serde::{Deserialize, Serialize};
-
-#[derive(PartialEq, Serialize, Deserialize)]
-pub enum ViewMode {
-    Day,
-    Month,
-    Year,
-}
-
-impl std::default::Default for ViewMode {
-    fn default() -> Self {
-        ViewMode::Month
-    }
-}
 
 struct StatusLine(String, String);
 
@@ -41,9 +28,6 @@ pub struct App {
     focus: usize,
 
     #[serde(skip)]
-    view_mode: ViewMode,
-
-    #[serde(skip)]
     view_month_offset: u32,
 }
 
@@ -51,7 +35,6 @@ impl App {
     pub fn new() -> Self {
         return App {
             habits: vec![],
-            view_mode: ViewMode::Day,
             focus: 0,
             view_month_offset: 0,
         };
@@ -65,9 +48,9 @@ impl App {
         self.habits.retain(|h| h.get_name() != name);
     }
 
-    pub fn set_mode(&mut self, set_mode: ViewMode) {
-        if set_mode != self.view_mode {
-            self.view_mode = set_mode;
+    pub fn set_mode(&mut self, mode: ViewMode) {
+        if !self.habits.is_empty() {
+            self.habits[self.focus].set_view_mode(mode);
         }
     }
 
@@ -233,8 +216,8 @@ impl View for App {
         }
 
         offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 2);
-        printer.print(offset, &self.status().1); // right
-        printer.print(offset, &self.status().0); // left
+        printer.print(offset, &self.status().1); // right status
+        printer.print(offset, &self.status().0); // left status
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {

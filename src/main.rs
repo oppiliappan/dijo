@@ -9,7 +9,7 @@ mod theme;
 mod utils;
 mod views;
 
-use crate::app::{App, ViewMode};
+use crate::app::App;
 use crate::command::{open_command_window, Command};
 use crate::habit::{Bit, Count, Habit};
 use crate::utils::{load_configuration_file, AppConfig};

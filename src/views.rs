@@ -8,6 +8,7 @@ use chrono::prelude::*;
 use chrono::{Duration, Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Habit, TrackEvent};
+
 use crate::CONFIGURATION;
 
 pub trait ShadowView {
@@ -62,6 +63,15 @@ where
             },
         );
 
+        // fn draw_day(&self, p: &Printer) { };
+        // fn draw_month(&self, p: &Printer) {};
+
+        // match self.view_mode() {
+        //     ViewMode::Day => draw_day(self, p),
+        //     ViewMode::Month =>
+        // }
+
+        //let draw_day = |printer: &Printer| {
         let mut i = 1;
         while let Some(d) = NaiveDate::from_ymd_opt(year, month, i) {
             let day_style;
@@ -82,6 +92,8 @@ where
             }
             i += 1;
         }
+        //};
+        //draw_day(printer);
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {
