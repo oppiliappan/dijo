@@ -26,6 +26,8 @@ pub trait Habit {
 
     fn set_view_mode(&mut self, mode: ViewMode);
     fn view_mode(&self) -> ViewMode;
+
+    fn is_auto(&self) -> bool;
 }
 
 #[typetag::serde(tag = "type")]
@@ -44,21 +46,15 @@ pub trait HabitWrapper: erased_serde::Serialize {
 
     fn set_view_mode(&mut self, mode: ViewMode);
     fn view_mode(&self) -> ViewMode;
+
+    fn is_auto(&self) -> bool;
 }
 
 macro_rules! auto_habit_impl {
     ($struct_name:ident) => {
         #[typetag::serde]
         impl HabitWrapper for $struct_name {
-            fn remaining(&self, date: NaiveDate) -> u32 {
-                Habit::remaining(self, date)
-            }
-            fn goal(&self) -> u32 {
-                Habit::goal(self)
-            }
-            fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
-                Habit::modify(self, date, event);
-            }
+            // ShadowView
             fn draw(&self, printer: &Printer) {
                 ShadowView::draw(self, printer)
             }
@@ -70,6 +66,17 @@ macro_rules! auto_habit_impl {
             }
             fn take_focus(&mut self, d: Direction) -> bool {
                 ShadowView::take_focus(self, d)
+            }
+
+            // Habit
+            fn remaining(&self, date: NaiveDate) -> u32 {
+                Habit::remaining(self, date)
+            }
+            fn goal(&self) -> u32 {
+                Habit::goal(self)
+            }
+            fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
+                Habit::modify(self, date, event);
             }
             fn get_name(&self) -> String {
                 Habit::name(self)
@@ -85,6 +92,9 @@ macro_rules! auto_habit_impl {
             }
             fn view_mode(&self) -> ViewMode {
                 Habit::view_mode(self)
+            }
+            fn is_auto(&self) -> bool {
+                Habit::is_auto(self)
             }
         }
     };

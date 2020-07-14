@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
+use crate::habit::prelude::default_auto;
 use crate::habit::traits::Habit;
 use crate::habit::{TrackEvent, ViewMode};
 
@@ -12,6 +13,9 @@ pub struct Count {
     stats: HashMap<NaiveDate, u32>,
     goal: u32,
 
+    #[serde(default = "default_auto")]
+    auto: bool,
+
     #[serde(skip)]
     view_month_offset: u32,
 
@@ -20,11 +24,12 @@ pub struct Count {
 }
 
 impl Count {
-    pub fn new(name: impl AsRef<str>, goal: u32) -> Self {
+    pub fn new(name: impl AsRef<str>, goal: u32, auto: bool) -> Self {
         return Count {
             name: name.as_ref().to_owned(),
             stats: HashMap::new(),
             goal,
+            auto,
             view_month_offset: 0,
             view_mode: ViewMode::Day,
         };
@@ -98,5 +103,8 @@ impl Habit for Count {
     }
     fn view_mode(&self) -> ViewMode {
         self.view_mode
+    }
+    fn is_auto(&self) -> bool {
+        self.auto
     }
 }

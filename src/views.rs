@@ -63,7 +63,7 @@ where
             },
         );
 
-        let draw_month = |printer: &Printer| {
+        let draw_week = |printer: &Printer| {
             let days = (1..31)
                 .map(|i| NaiveDate::from_ymd_opt(year, month, i))
                 .flatten() // dates 28-31 may not exist, ignore them if they don't
@@ -77,10 +77,10 @@ where
                 let bars_to_fill = (completions * full as u32) / weekly_goal;
                 let percentage = (completions as f64 * 100.) / weekly_goal as f64;
                 printer.with_style(future_style, |p| {
-                    p.print((4, line_nr), &"―".repeat(full));
+                    p.print((4, line_nr), &"─".repeat(full));
                 });
                 printer.with_style(goal_reached_style, |p| {
-                    p.print((4, line_nr), &"―".repeat(bars_to_fill as usize));
+                    p.print((4, line_nr), &"─".repeat(bars_to_fill as usize));
                 });
                 printer.with_style(
                     if is_this_week {
@@ -120,7 +120,7 @@ where
 
         match self.view_mode() {
             ViewMode::Day => draw_day(printer),
-            ViewMode::Week => draw_month(printer),
+            ViewMode::Week => draw_week(printer),
             _ => draw_day(printer),
         };
     }

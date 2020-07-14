@@ -18,3 +18,7 @@ impl std::default::Default for ViewMode {
         ViewMode::Day
     }
 }
+
+pub fn default_auto() -> bool {
+    false
+}

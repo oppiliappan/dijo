@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
+use crate::habit::prelude::default_auto;
 use crate::habit::traits::Habit;
 use crate::habit::{TrackEvent, ViewMode};
 use crate::CONFIGURATION;
@@ -37,6 +38,9 @@ pub struct Bit {
     stats: HashMap<NaiveDate, CustomBool>,
     goal: CustomBool,
 
+    #[serde(default = "default_auto")]
+    auto: bool,
+
     #[serde(skip)]
     view_month_offset: u32,
 
@@ -45,11 +49,12 @@ pub struct Bit {
 }
 
 impl Bit {
-    pub fn new(name: impl AsRef<str>) -> Self {
+    pub fn new(name: impl AsRef<str>, auto: bool) -> Self {
         return Bit {
             name: name.as_ref().to_owned(),
             stats: HashMap::new(),
             goal: CustomBool(true),
+            auto,
             view_month_offset: 0,
             view_mode: ViewMode::Day,
         };
@@ -113,5 +118,8 @@ impl Habit for Bit {
     }
     fn view_mode(&self) -> ViewMode {
         self.view_mode
+    }
+    fn is_auto(&self) -> bool {
+        self.auto
     }
 }

@@ -190,11 +190,15 @@ impl App {
     pub fn parse_command(&mut self, input: &str) {
         let c = Command::from_string(input);
         match c {
-            Command::Add(name, kind, goal) => {
+            Command::Add(name, kind, goal, auto) => {
                 if kind == "count" {
-                    self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0))));
+                    self.add_habit(Box::new(Count::new(
+                        name,
+                        goal.unwrap_or(0),
+                        auto.unwrap_or(false),
+                    )));
                 } else if kind == "bit" {
-                    self.add_habit(Box::new(Bit::new(name)));
+                    self.add_habit(Box::new(Bit::new(name, auto.unwrap_or(false))));
                 }
             }
             Command::Delete(name) => {
