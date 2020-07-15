@@ -208,7 +208,8 @@ impl App {
     pub fn parse_command(&mut self, input: &str) {
         let c = Command::from_string(input);
         match c {
-            Command::Add(name, kind, goal, auto) => {
+            Command::Add(name, goal, auto) => {
+                let kind = if goal == Some(1) { "bit" } else { "count" };
                 if kind == "count" {
                     self.add_habit(Box::new(Count::new(
                         name,

@@ -27,7 +27,7 @@ fn call_on_app(s: &mut Cursive, input: &str) {
 
 #[derive(PartialEq)]
 pub enum Command {
-    Add(String, String, Option<u32>, Option<bool>), // habit name, habit type, optional goal, auto tracked
+    Add(String, Option<u32>, Option<bool>), // habit name, habit type, optional goal, auto tracked
     MonthPrev,
     MonthNext,
     Delete(String),
@@ -49,14 +49,9 @@ impl Command {
                 if args.len() < 2 {
                     return Command::Blank;
                 }
-                let goal = args.get(2).map(|g| g.parse::<u32>().ok()).flatten();
-                let auto = args.get(3).map(|g| g.parse::<bool>().ok()).flatten();
-                return Command::Add(
-                    args.get_mut(0).unwrap().to_string(),
-                    args.get_mut(1).unwrap().to_string(),
-                    goal,
-                    auto,
-                );
+                let goal = args.get(1).map(|g| g.parse::<u32>().ok()).flatten();
+                let auto = args.get(2).map(|g| if g == "auto" { true } else { false });
+                return Command::Add(args.get_mut(0).unwrap().to_string(), goal, auto);
             }
             "delete" | "d" => {
                 if args.len() < 1 {
