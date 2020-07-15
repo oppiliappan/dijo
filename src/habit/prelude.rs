@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize};
+use std::default;
+use std::fmt;
 
 pub enum TrackEvent {
     Increment,
@@ -13,9 +15,20 @@ pub enum ViewMode {
     Year,
 }
 
-impl std::default::Default for ViewMode {
+impl default::Default for ViewMode {
     fn default() -> Self {
         ViewMode::Day
+    }
+}
+
+impl fmt::Display for ViewMode {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ViewMode::Day => write!(f, "DAY"),
+            ViewMode::Week => write!(f, "WEEK"),
+            ViewMode::Month => write!(f, "MONTH"),
+            ViewMode::Year => write!(f, "YEAR"),
+        }
     }
 }
 

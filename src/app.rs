@@ -48,6 +48,13 @@ impl App {
         self.habits.retain(|h| h.get_name() != name);
     }
 
+    pub fn get_mode(&self) -> ViewMode {
+        if self.habits.is_empty() {
+            return ViewMode::Day;
+        }
+        return self.habits[self.focus].view_mode();
+    }
+
     pub fn set_mode(&mut self, mode: ViewMode) {
         if !self.habits.is_empty() {
             self.habits[self.focus].set_view_mode(mode);
@@ -115,22 +122,19 @@ impl App {
         let completed = total - remaining;
 
         let timestamp = if self.view_month_offset == 0 {
-            format!(
-                "{:>width$}",
-                Local::now().date().format("%d/%b/%y"),
-                width = CONFIGURATION.view_width * CONFIGURATION.grid_width
-            )
+            format!("{}", Local::now().date().format("%d/%b/%y"),)
         } else {
             let months = self.view_month_offset;
-            format!(
-                "{:>width$}",
-                format!("{} months ago", months),
-                width = CONFIGURATION.view_width * CONFIGURATION.grid_width
-            )
+            format!("{}", format!("{} months ago", months),)
         };
 
         StatusLine {
-            0: format!("Today: {} completed, {} remaining", completed, remaining),
+            0: format!(
+                "Today: {} completed, {} remaining --{}--",
+                completed,
+                remaining,
+                self.get_mode()
+            ),
             1: timestamp,
         }
     }
@@ -218,18 +222,27 @@ impl App {
 impl View for App {
     fn draw(&self, printer: &Printer) {
         let grid_width = CONFIGURATION.grid_width;
+        let view_width = CONFIGURATION.view_width;
+        let view_height = CONFIGURATION.view_height;
         let mut offset = Vec2::zero();
         for (idx, i) in self.habits.iter().enumerate() {
             if idx >= grid_width && idx % grid_width == 0 {
-                offset = offset.map_y(|y| y + CONFIGURATION.view_height).map_x(|_| 0);
+                offset = offset.map_y(|y| y + view_height).map_x(|_| 0);
             }
             i.draw(&printer.offset(offset).focused(self.focus == idx));
-            offset = offset.map_x(|x| x + CONFIGURATION.view_width + 2);
+            offset = offset.map_x(|x| x + view_width + 2);
         }
 
         offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 2);
-        printer.print(offset, &self.status().1); // right status
-        printer.print(offset, &self.status().0); // left status
+
+        let status = self.status();
+        printer.print(offset, &status.0); // left status
+
+        let full = grid_width * (view_width + 2);
+        offset = offset
+            .map_x(|_| full - status.1.len())
+            .map_y(|_| self.max_size().y - 2);
+        printer.print(offset, &status.1); // right status
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {
