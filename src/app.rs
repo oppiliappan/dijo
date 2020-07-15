@@ -2,6 +2,7 @@ use std::default::Default;
 use std::f64;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
+use std::path::PathBuf;
 
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
@@ -161,34 +162,47 @@ impl App {
     }
 
     pub fn load_state() -> Self {
-        let data_file = utils::data_file();
-        if let Ok(ref mut file) = File::open(data_file) {
-            let mut j = String::new();
-            file.read_to_string(&mut j);
-            return App {
-                habits: serde_json::from_str(&j).unwrap(),
-                ..Default::default()
-            };
-        } else {
-            Self::new()
-        }
+        let (regular_f, auto_f) = (utils::habit_file(), utils::auto_habit_file());
+        let read_from_file = |file: PathBuf| -> Vec<Box<dyn HabitWrapper>> {
+            if let Ok(ref mut f) = File::open(file) {
+                let mut j = String::new();
+                f.read_to_string(&mut j);
+                return serde_json::from_str(&j).unwrap();
+            } else {
+                return Vec::new();
+            }
+        };
+
+        let mut regular = read_from_file(regular_f);
+        let auto = read_from_file(auto_f);
+        regular.extend(auto);
+        return App {
+            habits: regular,
+            ..Default::default()
+        };
     }
 
     // this function does IO
     // TODO: convert this into non-blocking async function
     fn save_state(&self) {
-        let j = serde_json::to_string_pretty(&self.habits).unwrap();
-        let data_file = utils::data_file();
+        let (regular, auto): (Vec<_>, Vec<_>) = self.habits.iter().partition(|&x| !x.is_auto());
+        let (regular_f, auto_f) = (utils::habit_file(), utils::auto_habit_file());
 
-        match OpenOptions::new()
-            .write(true)
-            .create(true)
-            .truncate(true)
-            .open(data_file)
-        {
-            Ok(ref mut file) => file.write_all(j.as_bytes()).unwrap(),
-            Err(_) => panic!("Unable to write!"),
+        let write_to_file = |data: Vec<&Box<dyn HabitWrapper>>, file: PathBuf| {
+            let j = serde_json::to_string_pretty(&data).unwrap();
+            match OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(file)
+            {
+                Ok(ref mut f) => f.write_all(j.as_bytes()).unwrap(),
+                Err(_) => panic!("Unable to write!"),
+            };
         };
+
+        write_to_file(regular, regular_f);
+        write_to_file(auto, auto_f);
     }
 
     pub fn parse_command(&mut self, input: &str) {

@@ -34,13 +34,23 @@ pub fn load_configuration_file() -> AppConfig {
     };
 }
 
-pub fn data_file() -> PathBuf {
-    if let Some(proj_dirs) = ProjectDirs::from("rs", "nerdypepper", "dijo") {
-        let mut data_file = PathBuf::from(proj_dirs.data_dir());
-        fs::create_dir_all(&data_file);
-        data_file.push("habit_record.json");
-        return data_file;
-    } else {
-        panic!("Invalid home directory!")
-    };
+fn project_dirs() -> ProjectDirs {
+    ProjectDirs::from("rs", "nerdypepper", "dijo")
+        .unwrap_or_else(|| panic!("Invalid home directory!"))
+}
+
+pub fn habit_file() -> PathBuf {
+    let proj_dirs = project_dirs();
+    let mut data_file = PathBuf::from(proj_dirs.data_dir());
+    fs::create_dir_all(&data_file);
+    data_file.push("habit_record.json");
+    return data_file;
+}
+
+pub fn auto_habit_file() -> PathBuf {
+    let proj_dirs = project_dirs();
+    let mut data_file = PathBuf::from(proj_dirs.data_dir());
+    fs::create_dir_all(&data_file);
+    data_file.push("habit_record[auto].json");
+    return data_file;
 }
