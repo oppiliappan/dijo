@@ -14,3 +14,7 @@ Cargo.lock
 
 # ignore logs
 *.txt
+
+# ignore session
+
+*.vim
