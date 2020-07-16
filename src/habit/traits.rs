@@ -39,7 +39,7 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn on_event(&mut self, event: Event) -> EventResult;
     fn required_size(&mut self, _: Vec2) -> Vec2;
     fn take_focus(&mut self, _: Direction) -> bool;
-    fn get_name(&self) -> String;
+    fn name(&self) -> String;
 
     fn set_view_month_offset(&mut self, offset: u32);
     fn view_month_offset(&self) -> u32;
@@ -78,7 +78,7 @@ macro_rules! auto_habit_impl {
             fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
                 Habit::modify(self, date, event);
             }
-            fn get_name(&self) -> String {
+            fn name(&self) -> String {
                 Habit::name(self)
             }
             fn set_view_month_offset(&mut self, offset: u32) {
