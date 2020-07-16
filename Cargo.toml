@@ -12,6 +12,7 @@ lazy_static = "1.4.0"
 erased-serde = "0.3"
 typetag = "0.1.4"
 directories = "3.0.1"
+clap = "2.33"
 
 [dependencies.cursive]
 version = "0.15"

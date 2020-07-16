@@ -11,7 +11,8 @@ pub fn open_command_window(s: &mut Cursive) {
 
 fn call_on_app(s: &mut Cursive, input: &str) {
     s.call_on_name("Main", |view: &mut App| {
-        view.parse_command(input);
+        let cmd = Command::from_string(input);
+        view.parse_command(cmd);
     });
 
     // special command that requires access to
@@ -31,6 +32,8 @@ pub enum Command {
     MonthPrev,
     MonthNext,
     Delete(String),
+    TrackUp(String),
+    TrackDown(String),
     Quit,
     Blank,
 }
@@ -58,6 +61,18 @@ impl Command {
                     return Command::Blank;
                 }
                 return Command::Delete(args[0].to_string());
+            }
+            "track-up" | "tup" => {
+                if args.len() < 1 {
+                    return Command::Blank;
+                }
+                return Command::TrackUp(args[0].to_string());
+            }
+            "track-down" | "tdown" => {
+                if args.len() < 1 {
+                    return Command::Blank;
+                }
+                return Command::TrackDown(args[0].to_string());
             }
             "mprev" | "month-prev" => return Command::MonthPrev,
             "mnext" | "month-next" => return Command::MonthNext,

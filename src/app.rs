@@ -11,7 +11,7 @@ use cursive::{Printer, Vec2};
 
 use chrono::Local;
 
-use crate::habit::{Bit, Count, HabitWrapper, ViewMode};
+use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils;
 use crate::Command;
 use crate::CONFIGURATION;
@@ -46,7 +46,7 @@ impl App {
     }
 
     pub fn delete_by_name(&mut self, name: &str) {
-        self.habits.retain(|h| h.get_name() != name);
+        self.habits.retain(|h| h.name() != name);
     }
 
     pub fn get_mode(&self) -> ViewMode {
@@ -184,7 +184,7 @@ impl App {
 
     // this function does IO
     // TODO: convert this into non-blocking async function
-    fn save_state(&self) {
+    pub fn save_state(&self) {
         let (regular, auto): (Vec<_>, Vec<_>) = self.habits.iter().partition(|&x| !x.is_auto());
         let (regular_f, auto_f) = (utils::habit_file(), utils::auto_habit_file());
 
@@ -205,8 +205,7 @@ impl App {
         write_to_file(auto, auto_f);
     }
 
-    pub fn parse_command(&mut self, input: &str) {
-        let c = Command::from_string(input);
+    pub fn parse_command(&mut self, c: Command) {
         match c {
             Command::Add(name, goal, auto) => {
                 let kind = if goal == Some(1) { "bit" } else { "count" };
@@ -223,6 +222,24 @@ impl App {
             Command::Delete(name) => {
                 self.delete_by_name(&name);
                 self.focus = 0;
+            }
+            Command::TrackUp(name) => {
+                let target_habit = self
+                    .habits
+                    .iter_mut()
+                    .find(|x| x.name() == name && x.is_auto());
+                if let Some(h) = target_habit {
+                    h.modify(Local::now().naive_utc().date(), TrackEvent::Increment);
+                }
+            }
+            Command::TrackDown(name) => {
+                let target_habit = self
+                    .habits
+                    .iter_mut()
+                    .find(|x| x.name() == name && x.is_auto());
+                if let Some(h) = target_habit {
+                    h.modify(Local::now().naive_utc().date(), TrackEvent::Decrement);
+                }
             }
             Command::Quit => self.save_state(),
             Command::MonthNext => self.sift_forward(),
@@ -253,10 +270,8 @@ impl View for App {
         let status = self.status();
         printer.print(offset, &status.0); // left status
 
-        let full = grid_width * (view_width + 2);
-        offset = offset
-            .map_x(|_| full - status.1.len())
-            .map_y(|_| self.max_size().y - 2);
+        let full = self.max_size().x;
+        offset = offset.map_x(|_| full - status.1.len());
         printer.print(offset, &status.1); // right status
     }
 
