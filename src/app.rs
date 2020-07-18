@@ -1,15 +1,17 @@
 use std::default::Default;
 use std::f64;
+use std::time::Duration;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::path::PathBuf;
+use std::sync::mpsc::{channel, Receiver};
 
+use chrono::Local;
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
-
-use chrono::Local;
+use notify::{watcher, RecursiveMode, Watcher, DebouncedEvent, INotifyWatcher};
 
 use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils;
@@ -22,6 +24,8 @@ pub struct App {
     // holds app data
     habits: Vec<Box<dyn HabitWrapper>>,
 
+    _file_watcher: INotifyWatcher,
+    file_event_recv: Receiver<DebouncedEvent>,
     focus: usize,
     view_month_offset: u32,
 }
@@ -34,9 +38,16 @@ impl Default for App {
 
 impl App {
     pub fn new() -> Self {
+        let (tx, rx) = channel();
+        let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
+        watcher.watch(utils::auto_habit_file(), RecursiveMode::Recursive).unwrap_or_else(|e| {
+            panic!("Unable to start file watcher: {}", e);
+        });
         return App {
             habits: vec![],
             focus: 0,
+            _file_watcher: watcher,
+            file_event_recv: rx,
             view_month_offset: 0,
         };
     }
@@ -303,6 +314,23 @@ impl View for App {
     }
 
     fn on_event(&mut self, e: Event) -> EventResult {
+        match self.file_event_recv.try_recv() {
+            Ok(DebouncedEvent::Write(_)) => {
+                let read_from_file = |file: PathBuf| -> Vec<Box<dyn HabitWrapper>> {
+                    if let Ok(ref mut f) = File::open(file) {
+                        let mut j = String::new();
+                        f.read_to_string(&mut j);
+                        return serde_json::from_str(&j).unwrap();
+                    } else {
+                        return Vec::new();
+                    }
+                };
+                let auto = read_from_file(utils::auto_habit_file());
+                self.habits.retain(|x| !x.is_auto());
+                self.habits.extend(auto);
+            }
+            _ => {}
+        };
         match e {
             Event::Key(Key::Right) | Event::Key(Key::Tab) | Event::Char('l') => {
                 self.set_focus(Absolute::Right);

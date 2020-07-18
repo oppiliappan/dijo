@@ -13,6 +13,7 @@ erased-serde = "0.3"
 typetag = "0.1.4"
 directories = "3.0.1"
 clap = "2.33"
+notify = "4.0"
 
 [dependencies.cursive]
 version = "0.15"
