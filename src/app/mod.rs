@@ -7,8 +7,10 @@ use crate::habit::HabitWrapper;
 
 mod impl_self;
 mod impl_view;
+mod message;
 
 pub struct StatusLine(String, String);
+pub use message::{Message, MessageKind};
 
 pub struct App {
     // holds app data
@@ -18,6 +20,7 @@ pub struct App {
     file_event_recv: Receiver<DebouncedEvent>,
     focus: usize,
     view_month_offset: u32,
+    message: Message,
 }
 
 impl Default for App {
