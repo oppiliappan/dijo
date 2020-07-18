@@ -5,11 +5,12 @@ use std::path::PathBuf;
 
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
+use cursive::theme::{Color, Style};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 use notify::DebouncedEvent;
 
-use crate::app::App;
+use crate::app::{App, MessageKind};
 use crate::habit::{HabitWrapper, ViewMode};
 use crate::utils;
 use crate::CONFIGURATION;
@@ -36,6 +37,11 @@ impl View for App {
         let full = self.max_size().x;
         offset = offset.map_x(|_| full - status.1.len());
         printer.print(offset, &status.1); // right status
+
+        offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 1);
+        printer.with_style(Color::from(self.message.kind()), |p| {
+            p.print(offset, self.message.contents())
+        });
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {
@@ -156,6 +162,11 @@ impl View for App {
             }
             Event::Char('}') => {
                 self.set_view_month_offset(0);
+                return EventResult::Consumed(None);
+            }
+            Event::CtrlChar('l') => {
+                self.message.clear();
+                self.message.set_kind(MessageKind::Info);
                 return EventResult::Consumed(None);
             }
 

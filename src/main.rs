@@ -36,12 +36,18 @@ fn main() {
         .get_matches();
     if let Some(c) = matches.value_of("command") {
         let command = Command::from_string(c);
-        if matches!(command, Command::TrackUp(_) | Command::TrackDown(_)) {
-            let mut app = App::load_state();
-            app.parse_command(command);
-            app.save_state();
-        } else {
-            eprintln!("Invalid or unsupported command!");
+        match command {
+            Ok(Command::TrackUp(_)) | Ok(Command::TrackDown(_)) => {
+                let mut app = App::load_state();
+                app.parse_command(command);
+                app.save_state();
+            }
+            Err(e) => {
+                eprintln!("{}", e);
+            }
+            _ => eprintln!(
+                "Commands other than `track-up` and `track-down` are currently not supported!"
+            ),
         }
     } else {
         let mut s = termion().unwrap();

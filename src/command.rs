@@ -1,3 +1,5 @@
+use std::fmt;
+
 use cursive::view::Resizable;
 use cursive::views::{Dialog, EditView};
 use cursive::Cursive;
@@ -19,7 +21,7 @@ fn call_on_app(s: &mut Cursive, input: &str) {
     // our main cursive object, has to be parsed again
     // here
     // TODO: fix this somehow
-    if Command::from_string(input) == Command::Quit {
+    if let Ok(Command::Quit) = Command::from_string(input) {
         s.quit();
     }
 
@@ -28,7 +30,7 @@ fn call_on_app(s: &mut Cursive, input: &str) {
 
 #[derive(PartialEq)]
 pub enum Command {
-    Add(String, Option<u32>, Option<bool>), // habit name, habit type, optional goal, auto tracked
+    Add(String, Option<u32>, bool),
     MonthPrev,
     MonthNext,
     Delete(String),
@@ -38,46 +40,95 @@ pub enum Command {
     Blank,
 }
 
+#[derive(Debug)]
+pub enum CommandLineError {
+    InvalidCommand(String),
+    InvalidArg(u32), // position
+    NotEnoughArgs(String, u32),
+}
+
+impl std::error::Error for CommandLineError {}
+
+impl fmt::Display for CommandLineError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            CommandLineError::InvalidCommand(s) => write!(f, "Invalid command: `{}`", s),
+            CommandLineError::InvalidArg(p) => write!(f, "Invalid argument at position {}", p),
+            CommandLineError::NotEnoughArgs(s, n) => {
+                write!(f, "Command `{}` requires atleast {} argument(s)!", s, n)
+            }
+        }
+    }
+}
+
+type Result<T> = std::result::Result<T, CommandLineError>;
+
 impl Command {
-    pub fn from_string<P: AsRef<str>>(input: P) -> Self {
+    pub fn from_string<P: AsRef<str>>(input: P) -> Result<Command> {
         let mut strings: Vec<&str> = input.as_ref().trim().split(' ').collect();
         if strings.is_empty() {
-            return Command::Blank;
+            return Ok(Command::Blank);
         }
 
         let first = strings.first().unwrap().to_string();
         let mut args: Vec<String> = strings.iter_mut().skip(1).map(|s| s.to_string()).collect();
         match first.as_ref() {
             "add" | "a" => {
-                if args.len() < 2 {
-                    return Command::Blank;
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
                 }
-                let goal = args.get(1).map(|g| g.parse::<u32>().ok()).flatten();
-                let auto = args.get(2).map(|g| if g == "auto" { true } else { false });
-                return Command::Add(args.get_mut(0).unwrap().to_string(), goal, auto);
+                let goal = args
+                    .get(1)
+                    .map(|x| {
+                        x.parse::<u32>()
+                            .map_err(|_| CommandLineError::InvalidArg(1))
+                    })
+                    .transpose()?;
+                return Ok(Command::Add(
+                    args.get_mut(0).unwrap().to_string(),
+                    goal,
+                    false,
+                ));
+            }
+            "add-auto" | "aa" => {
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
+                }
+                let goal = args
+                    .get(1)
+                    .map(|x| {
+                        x.parse::<u32>()
+                            .map_err(|_| CommandLineError::InvalidArg(1))
+                    })
+                    .transpose()?;
+                return Ok(Command::Add(
+                    args.get_mut(0).unwrap().to_string(),
+                    goal,
+                    true,
+                ));
             }
             "delete" | "d" => {
-                if args.len() < 1 {
-                    return Command::Blank;
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
                 }
-                return Command::Delete(args[0].to_string());
+                return Ok(Command::Delete(args[0].to_string()));
             }
             "track-up" | "tup" => {
-                if args.len() < 1 {
-                    return Command::Blank;
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
                 }
-                return Command::TrackUp(args[0].to_string());
+                return Ok(Command::TrackUp(args[0].to_string()));
             }
             "track-down" | "tdown" => {
-                if args.len() < 1 {
-                    return Command::Blank;
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
                 }
-                return Command::TrackDown(args[0].to_string());
+                return Ok(Command::TrackDown(args[0].to_string()));
             }
-            "mprev" | "month-prev" => return Command::MonthPrev,
-            "mnext" | "month-next" => return Command::MonthNext,
-            "q" | "quit" => return Command::Quit,
-            _ => return Command::Blank,
+            "mprev" | "month-prev" => return Ok(Command::MonthPrev),
+            "mnext" | "month-next" => return Ok(Command::MonthNext),
+            "q" | "quit" => return Ok(Command::Quit),
+            s => return Err(CommandLineError::InvalidCommand(s.into())),
         }
     }
 }

@@ -11,12 +11,12 @@ use cursive::direction::Absolute;
 use cursive::Vec2;
 use notify::{watcher, RecursiveMode, Watcher};
 
+use crate::command::{Command, CommandLineError};
 use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils;
-use crate::Command;
 use crate::CONFIGURATION;
 
-use crate::app::{App, StatusLine};
+use crate::app::{App, Message, MessageKind, StatusLine};
 
 impl App {
     pub fn new() -> Self {
@@ -33,6 +33,7 @@ impl App {
             _file_watcher: watcher,
             file_event_recv: rx,
             view_month_offset: 0,
+            message: Message::default(),
         };
     }
 
@@ -200,47 +201,49 @@ impl App {
         write_to_file(auto, auto_f);
     }
 
-    pub fn parse_command(&mut self, c: Command) {
-        match c {
-            Command::Add(name, goal, auto) => {
-                let kind = if goal == Some(1) { "bit" } else { "count" };
-                if kind == "count" {
-                    self.add_habit(Box::new(Count::new(
-                        name,
-                        goal.unwrap_or(0),
-                        auto.unwrap_or(false),
-                    )));
-                } else if kind == "bit" {
-                    self.add_habit(Box::new(Bit::new(name, auto.unwrap_or(false))));
+    pub fn parse_command(&mut self, result: Result<Command, CommandLineError>) {
+        match result {
+            Ok(c) => match c {
+                Command::Add(name, goal, auto) => {
+                    let kind = if goal == Some(1) { "bit" } else { "count" };
+                    if kind == "count" {
+                        self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0), auto)));
+                    } else if kind == "bit" {
+                        self.add_habit(Box::new(Bit::new(name, auto)));
+                    }
                 }
-            }
-            Command::Delete(name) => {
-                self.delete_by_name(&name);
-                self.focus = 0;
-            }
-            Command::TrackUp(name) => {
-                let target_habit = self
-                    .habits
-                    .iter_mut()
-                    .find(|x| x.name() == name && x.is_auto());
-                if let Some(h) = target_habit {
-                    h.modify(Local::now().naive_utc().date(), TrackEvent::Increment);
+                Command::Delete(name) => {
+                    self.delete_by_name(&name);
+                    self.focus = 0;
                 }
-            }
-            Command::TrackDown(name) => {
-                let target_habit = self
-                    .habits
-                    .iter_mut()
-                    .find(|x| x.name() == name && x.is_auto());
-                if let Some(h) = target_habit {
-                    h.modify(Local::now().naive_utc().date(), TrackEvent::Decrement);
+                Command::TrackUp(name) => {
+                    let target_habit = self
+                        .habits
+                        .iter_mut()
+                        .find(|x| x.name() == name && x.is_auto());
+                    if let Some(h) = target_habit {
+                        h.modify(Local::now().naive_utc().date(), TrackEvent::Increment);
+                    }
                 }
-            }
-            Command::Quit => self.save_state(),
-            Command::MonthNext => self.sift_forward(),
-            Command::MonthPrev => self.sift_backward(),
-            _ => {
-                eprintln!("UNKNOWN COMMAND!");
+                Command::TrackDown(name) => {
+                    let target_habit = self
+                        .habits
+                        .iter_mut()
+                        .find(|x| x.name() == name && x.is_auto());
+                    if let Some(h) = target_habit {
+                        h.modify(Local::now().naive_utc().date(), TrackEvent::Decrement);
+                    }
+                }
+                Command::Quit => self.save_state(),
+                Command::MonthNext => self.sift_forward(),
+                Command::MonthPrev => self.sift_backward(),
+                _ => {
+                    eprintln!("UNKNOWN COMMAND!");
+                }
+            },
+            Err(e) => {
+                self.message.set_message(e.to_string());
+                self.message.set_kind(MessageKind::Error);
             }
         }
     }
