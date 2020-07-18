@@ -1,17 +1,17 @@
 use std::default::Default;
 use std::f64;
-use std::time::Duration;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::path::PathBuf;
 use std::sync::mpsc::{channel, Receiver};
+use std::time::Duration;
 
 use chrono::Local;
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
-use notify::{watcher, RecursiveMode, Watcher, DebouncedEvent, INotifyWatcher};
+use notify::{watcher, DebouncedEvent, INotifyWatcher, RecursiveMode, Watcher};
 
 use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils;
@@ -40,9 +40,11 @@ impl App {
     pub fn new() -> Self {
         let (tx, rx) = channel();
         let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
-        watcher.watch(utils::auto_habit_file(), RecursiveMode::Recursive).unwrap_or_else(|e| {
-            panic!("Unable to start file watcher: {}", e);
-        });
+        watcher
+            .watch(utils::auto_habit_file(), RecursiveMode::Recursive)
+            .unwrap_or_else(|e| {
+                panic!("Unable to start file watcher: {}", e);
+            });
         return App {
             habits: vec![],
             focus: 0,

@@ -12,7 +12,7 @@ use crate::command::{open_command_window, Command};
 use crate::utils::{load_configuration_file, AppConfig};
 
 use clap::{App as ClapApp, Arg};
-use cursive::ncurses;
+use cursive::termion;
 use cursive::views::NamedView;
 use lazy_static::lazy_static;
 
@@ -44,7 +44,7 @@ fn main() {
             eprintln!("Invalid or unsupported command!");
         }
     } else {
-        let mut s = ncurses().unwrap();
+        let mut s = termion().unwrap();
         let app = App::load_state();
         s.add_layer(NamedView::new("Main", app));
         s.add_global_callback(':', |s| open_command_window(s));
