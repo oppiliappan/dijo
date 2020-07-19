@@ -11,8 +11,6 @@ keywords = ["tracker", "event-tracker", "tui", "journal"]
 categories = ["date-and-time", "command-line-interface"]
 license = "MIT"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 serde_json = "1.0"
 lazy_static = "1.4.0"

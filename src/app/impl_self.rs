@@ -16,24 +16,20 @@ use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils;
 use crate::CONFIGURATION;
 
-use crate::app::{App, Message, MessageKind, StatusLine};
+use crate::app::{App, MessageKind, StatusLine};
 
 impl App {
     pub fn new() -> Self {
         let (tx, rx) = channel();
         let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
-        watcher
-            .watch(utils::auto_habit_file(), RecursiveMode::Recursive)
-            .unwrap_or_else(|e| {
-                panic!("Unable to start file watcher: {}", e);
-            });
+        watcher.watch(utils::auto_habit_file(), RecursiveMode::Recursive);
         return App {
             habits: vec![],
             focus: 0,
             _file_watcher: watcher,
             file_event_recv: rx,
             view_month_offset: 0,
-            message: Message::default(),
+            message: "Type :add <habit-name> <goal> to get started, Ctrl-L to dismiss".into(),
         };
     }
 
@@ -147,15 +143,9 @@ impl App {
 
     pub fn max_size(&self) -> Vec2 {
         let grid_width = CONFIGURATION.grid_width;
-        let width = {
-            if self.habits.len() > 0 {
-                grid_width * CONFIGURATION.view_width
-            } else {
-                0
-            }
-        };
+        let width = grid_width * CONFIGURATION.view_width;
         let height = {
-            if self.habits.len() > 0 {
+            if !self.habits.is_empty() {
                 (CONFIGURATION.view_height as f64
                     * (self.habits.len() as f64 / grid_width as f64).ceil())
                     as usize

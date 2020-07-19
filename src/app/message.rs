@@ -17,6 +17,18 @@ impl From<MessageKind> for Color {
     }
 }
 
+impl<T> From<T> for Message
+where
+    T: AsRef<str>,
+{
+    fn from(item: T) -> Self {
+        return Message {
+            msg: item.as_ref().to_string(),
+            kind: MessageKind::Info,
+        };
+    }
+}
+
 pub struct Message {
     msg: String,
     kind: MessageKind,

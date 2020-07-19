@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
-use cursive::theme::{Color, Style};
+use cursive::theme::Color;
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 use notify::DebouncedEvent;
@@ -48,23 +48,16 @@ impl View for App {
         let grid_width = CONFIGURATION.grid_width;
         let view_width = CONFIGURATION.view_width;
         let view_height = CONFIGURATION.view_height;
-        let width = {
-            if self.habits.len() > 0 {
-                grid_width * (view_width + 2)
-            } else {
-                0
-            }
-        };
+        let width = grid_width * (view_width + 2);
         let height = {
             if self.habits.len() > 0 {
                 (view_height as f64 * (self.habits.len() as f64 / grid_width as f64).ceil())
                     as usize
-                    + 2 // to acoomodate statusline and message line
             } else {
                 0
             }
         };
-        Vec2::new(width, height)
+        Vec2::new(width, height + 2)
     }
 
     fn take_focus(&mut self, _: Direction) -> bool {
@@ -89,6 +82,9 @@ impl View for App {
             }
             _ => {}
         };
+        if self.habits.is_empty() {
+            return EventResult::Ignored;
+        }
         match e {
             Event::Key(Key::Right) | Event::Key(Key::Tab) | Event::Char('l') => {
                 self.set_focus(Absolute::Right);
