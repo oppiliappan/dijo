@@ -1,6 +1,6 @@
 [package]
 name = "dijo"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Akshay <nerdy@peppe.rs>"]
 edition = "2018"
 description = "Scriptable, curses-based, digital habit tracker"
