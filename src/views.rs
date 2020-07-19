@@ -59,7 +59,14 @@ where
                 },
             ]),
             |p| {
-                p.print((0, 0), &format!(" {} ", self.name()));
+                p.print(
+                    (0, 0),
+                    &format!(
+                        " {:.width$} ",
+                        self.name(),
+                        width = CONFIGURATION.view_width - 6
+                    ),
+                );
             },
         );
 
@@ -136,7 +143,7 @@ where
     fn on_event(&mut self, e: Event) -> EventResult {
         let now = Local::now().naive_utc().date();
         if self.is_auto() {
-            return EventResult::Consumed(None);
+            return EventResult::Ignored;
         }
         match e {
             Event::Key(Key::Enter) | Event::Char('n') => {

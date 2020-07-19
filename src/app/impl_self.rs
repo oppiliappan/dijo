@@ -211,6 +211,15 @@ impl App {
     }
 
     pub fn parse_command(&mut self, result: Result<Command, CommandLineError>) {
+        let mut _track = |name: &str, event: TrackEvent| {
+            let target_habit = self
+                .habits
+                .iter_mut()
+                .find(|x| x.name() == name && x.is_auto());
+            if let Some(h) = target_habit {
+                h.modify(Local::now().naive_utc().date(), event);
+            }
+        };
         match result {
             Ok(c) => match c {
                 Command::Add(name, goal, auto) => {
@@ -226,22 +235,10 @@ impl App {
                     self.focus = 0;
                 }
                 Command::TrackUp(name) => {
-                    let target_habit = self
-                        .habits
-                        .iter_mut()
-                        .find(|x| x.name() == name && x.is_auto());
-                    if let Some(h) = target_habit {
-                        h.modify(Local::now().naive_utc().date(), TrackEvent::Increment);
-                    }
+                    _track(&name, TrackEvent::Increment);
                 }
                 Command::TrackDown(name) => {
-                    let target_habit = self
-                        .habits
-                        .iter_mut()
-                        .find(|x| x.name() == name && x.is_auto());
-                    if let Some(h) = target_habit {
-                        h.modify(Local::now().naive_utc().date(), TrackEvent::Decrement);
-                    }
+                    _track(&name, TrackEvent::Decrement);
                 }
                 Command::Quit => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
