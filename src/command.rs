@@ -1,20 +1,45 @@
 use std::fmt;
 
+use cursive::theme::{BaseColor, Color, ColorStyle};
 use cursive::view::Resizable;
-use cursive::views::{Dialog, EditView};
+use cursive::views::{EditView, LinearLayout, TextView};
 use cursive::Cursive;
 
-use crate::app::App;
+use crate::{app::App, CONFIGURATION};
 
 pub fn open_command_window(s: &mut Cursive) {
-    let command_window = Dialog::around(EditView::new().on_submit(call_on_app).fixed_width(40));
-    s.add_layer(command_window);
+    let command_window = EditView::new()
+        .filler(" ")
+        .on_submit(call_on_app)
+        .style(ColorStyle::new(
+            Color::Dark(BaseColor::Black),
+            Color::Dark(BaseColor::White),
+        ))
+        .fixed_width(CONFIGURATION.view_width * CONFIGURATION.grid_width);
+    s.call_on_name("Frame", |view: &mut LinearLayout| {
+        let mut commandline = LinearLayout::horizontal()
+            .child(TextView::new(":"))
+            .child(command_window);
+        commandline.set_focus_index(1);
+        view.add_child(commandline);
+        view.set_focus_index(1);
+    });
 }
 
 fn call_on_app(s: &mut Cursive, input: &str) {
+    // things to do after recieving the command
+    // 1. parse the command
+    // 2. clean existing command messages
+    // 3. remove the command window
+    // 4. handle quit command
     s.call_on_name("Main", |view: &mut App| {
         let cmd = Command::from_string(input);
+        view.clear_message();
         view.parse_command(cmd);
+    });
+    s.call_on_name("Frame", |view: &mut LinearLayout| {
+        view.set_focus_index(0);
+        view.remove_child(view.get_focus_index());
     });
 
     // special command that requires access to
@@ -24,8 +49,6 @@ fn call_on_app(s: &mut Cursive, input: &str) {
     if let Ok(Command::Quit) = Command::from_string(input) {
         s.quit();
     }
-
-    s.pop_layer();
 }
 
 #[derive(PartialEq)]
@@ -72,41 +95,27 @@ impl Command {
 
         let first = strings.first().unwrap().to_string();
         let mut args: Vec<String> = strings.iter_mut().skip(1).map(|s| s.to_string()).collect();
+        let mut _add = |auto: bool, first: String| {
+            if args.is_empty() {
+                return Err(CommandLineError::NotEnoughArgs(first, 1));
+            }
+            let goal = args
+                .get(1)
+                .map(|x| {
+                    x.parse::<u32>()
+                        .map_err(|_| CommandLineError::InvalidArg(2))
+                })
+                .transpose()?;
+            return Ok(Command::Add(
+                args.get_mut(0).unwrap().to_string(),
+                goal,
+                auto,
+            ));
+        };
+
         match first.as_ref() {
-            "add" | "a" => {
-                if args.is_empty() {
-                    return Err(CommandLineError::NotEnoughArgs(first, 1));
-                }
-                let goal = args
-                    .get(1)
-                    .map(|x| {
-                        x.parse::<u32>()
-                            .map_err(|_| CommandLineError::InvalidArg(1))
-                    })
-                    .transpose()?;
-                return Ok(Command::Add(
-                    args.get_mut(0).unwrap().to_string(),
-                    goal,
-                    false,
-                ));
-            }
-            "add-auto" | "aa" => {
-                if args.is_empty() {
-                    return Err(CommandLineError::NotEnoughArgs(first, 1));
-                }
-                let goal = args
-                    .get(1)
-                    .map(|x| {
-                        x.parse::<u32>()
-                            .map_err(|_| CommandLineError::InvalidArg(1))
-                    })
-                    .transpose()?;
-                return Ok(Command::Add(
-                    args.get_mut(0).unwrap().to_string(),
-                    goal,
-                    true,
-                ));
-            }
+            "add" | "a" => _add(false, first),
+            "add-auto" | "aa" => _add(true, first),
             "delete" | "d" => {
                 if args.is_empty() {
                     return Err(CommandLineError::NotEnoughArgs(first, 1));
@@ -128,6 +137,7 @@ impl Command {
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),
             "mnext" | "month-next" => return Ok(Command::MonthNext),
             "q" | "quit" => return Ok(Command::Quit),
+            "" => return Ok(Command::Blank),
             s => return Err(CommandLineError::InvalidCommand(s.into())),
         }
     }

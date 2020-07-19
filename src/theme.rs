@@ -1,6 +1,6 @@
 use cursive::theme::Color::*;
 use cursive::theme::PaletteColor::*;
-use cursive::theme::{BaseColor, BorderStyle, Palette, Theme};
+use cursive::theme::{BaseColor, BorderStyle, ColorStyle, Palette, Theme};
 
 pub fn pallete_gen() -> Palette {
     let mut p = Palette::default();
@@ -8,7 +8,7 @@ pub fn pallete_gen() -> Palette {
     p[Shadow] = Light(BaseColor::Black);
     p[View] = Dark(BaseColor::Black);
     p[Primary] = Dark(BaseColor::White);
-    p[Secondary] = Light(BaseColor::Black);
+    p[Secondary] = Dark(BaseColor::Black);
     p[Tertiary] = Dark(BaseColor::Green);
     p[TitlePrimary] = Light(BaseColor::White);
     p[Highlight] = Dark(BaseColor::Red);
@@ -20,7 +20,7 @@ pub fn pallete_gen() -> Palette {
 pub fn theme_gen() -> Theme {
     let mut t = Theme::default();
     t.shadow = false;
-    t.borders = BorderStyle::Simple;
+    t.borders = BorderStyle::None;
     t.palette = pallete_gen();
     return t;
 }

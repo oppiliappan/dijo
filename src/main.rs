@@ -13,7 +13,7 @@ use crate::utils::{load_configuration_file, AppConfig};
 
 use clap::{App as ClapApp, Arg};
 use cursive::termion;
-use cursive::views::NamedView;
+use cursive::views::{LinearLayout, NamedView};
 use lazy_static::lazy_static;
 
 lazy_static! {
@@ -52,7 +52,11 @@ fn main() {
     } else {
         let mut s = termion().unwrap();
         let app = App::load_state();
-        s.add_layer(NamedView::new("Main", app));
+        let layout = NamedView::new(
+            "Frame",
+            LinearLayout::vertical().child(NamedView::new("Main", app)),
+        );
+        s.add_layer(layout);
         s.add_global_callback(':', |s| open_command_window(s));
 
         s.set_theme(theme::theme_gen());

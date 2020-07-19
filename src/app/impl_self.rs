@@ -237,9 +237,7 @@ impl App {
                 Command::Quit => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),
-                _ => {
-                    eprintln!("UNKNOWN COMMAND!");
-                }
+                Command::Blank => {}
             },
             Err(e) => {
                 self.message.set_message(e.to_string());
