@@ -3,6 +3,13 @@ name = "dijo"
 version = "0.1.0"
 authors = ["Akshay <nerdy@peppe.rs>"]
 edition = "2018"
+description = "Scriptable, curses-based, digital habit tracker"
+homepage = "https://github.com/nerdypepper/dijo"
+repository = "https://github.com/nerdypepper/dijo"
+readme = './readme.md'
+keywords = ["tracker", "event-tracker", "tui", "journal"]
+categories = ["date-and-time", "command-line-interface"]
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
