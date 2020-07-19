@@ -81,8 +81,8 @@ where
                 let remaining = week.iter().map(|&i| self.remaining(i)).sum::<u32>();
                 let completions = weekly_goal - remaining;
                 let full = CONFIGURATION.view_width - 8;
-                let bars_to_fill = (completions * full as u32) / weekly_goal;
-                let percentage = (completions as f64 * 100.) / weekly_goal as f64;
+                let bars_to_fill = if weekly_goal > 0 {(completions * full as u32) / weekly_goal} else {0};
+                let percentage = if weekly_goal > 0 {(completions as f64 * 100.) / weekly_goal as f64} else {0.0};
                 printer.with_style(future_style, |p| {
                     p.print((4, line_nr), &"─".repeat(full));
                 });
