@@ -42,7 +42,12 @@ impl App {
     }
 
     pub fn delete_by_name(&mut self, name: &str) {
+        let old_len = self.habits.len();
         self.habits.retain(|h| h.name() != name);
+        if old_len == self.habits.len() {
+            self.message
+                .set_message(format!("Could not delete habit `{}`", name))
+        }
     }
 
     pub fn get_mode(&self) -> ViewMode {
@@ -110,6 +115,10 @@ impl App {
             }
             Absolute::None => {}
         }
+    }
+
+    pub fn clear_message(&mut self) {
+        self.message.clear();
     }
 
     pub fn status(&self) -> StatusLine {
