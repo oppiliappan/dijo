@@ -1,7 +1,7 @@
 use std::default::Default;
 use std::sync::mpsc::Receiver;
 
-use notify::{DebouncedEvent, INotifyWatcher};
+use notify::{DebouncedEvent, RecommendedWatcher};
 
 use crate::habit::HabitWrapper;
 
@@ -16,7 +16,7 @@ pub struct App {
     // holds app data
     habits: Vec<Box<dyn HabitWrapper>>,
 
-    _file_watcher: INotifyWatcher,
+    _file_watcher: RecommendedWatcher,
     file_event_recv: Receiver<DebouncedEvent>,
     focus: usize,
     view_month_offset: u32,
