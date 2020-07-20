@@ -53,7 +53,6 @@ fn main() {
         let app = App::load_state();
         let m = app.message.clone();
         unsafe { signal_hook::register(signal_hook::SIGINT, move || {
-            std::fs::File::create("killed").unwrap();
             m.write().unwrap().set_message("Use the :q command to quit");
         }) }.unwrap();
 
@@ -67,6 +66,7 @@ fn main() {
         s.add_global_callback(':', |s| open_command_window(s));
 
         s.set_theme(theme::theme_gen());
+
         s.run();
     }
 }
