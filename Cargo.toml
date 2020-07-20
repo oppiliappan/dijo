@@ -23,7 +23,7 @@ notify = "4.0"
 [dependencies.cursive]
 version = "0.15"
 default-features = false
-features = ["termion-backend"]
+features = ["crossterm-backend"]
 
 [dependencies.chrono]
 version = "0.4"
