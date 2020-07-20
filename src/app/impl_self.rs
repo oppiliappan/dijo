@@ -5,6 +5,7 @@ use std::io::prelude::*;
 use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use std::time::Duration;
+use std::sync::{RwLock, Arc};
 
 use chrono::Local;
 use cursive::direction::Absolute;
@@ -23,13 +24,14 @@ impl App {
         let (tx, rx) = channel();
         let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
         watcher.watch(utils::auto_habit_file(), RecursiveMode::Recursive);
+
         return App {
             habits: vec![],
             focus: 0,
             _file_watcher: watcher,
             file_event_recv: rx,
             view_month_offset: 0,
-            message: "Type :add <habit-name> <goal> to get started, Ctrl-L to dismiss".into(),
+            message: Arc::new(RwLock::new("Type :add <habit-name> <goal> to get started, Ctrl-L to dismiss".into())),
         };
     }
 
@@ -41,7 +43,7 @@ impl App {
         let old_len = self.habits.len();
         self.habits.retain(|h| h.name() != name);
         if old_len == self.habits.len() {
-            self.message
+            self.message.write().unwrap()
                 .set_message(format!("Could not delete habit `{}`", name))
         }
     }
@@ -114,7 +116,7 @@ impl App {
     }
 
     pub fn clear_message(&mut self) {
-        self.message.clear();
+        self.message.write().unwrap().clear();
     }
 
     pub fn status(&self) -> StatusLine {
@@ -236,8 +238,8 @@ impl App {
                 Command::Blank => {}
             },
             Err(e) => {
-                self.message.set_message(e.to_string());
-                self.message.set_kind(MessageKind::Error);
+                self.message.write().unwrap().set_message(e.to_string());
+                self.message.write().unwrap().set_kind(MessageKind::Error);
             }
         }
     }

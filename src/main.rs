@@ -50,8 +50,15 @@ fn main() {
             ),
         }
     } else {
-        let mut s = termion().unwrap();
         let app = App::load_state();
+        let m = app.message.clone();
+        unsafe { signal_hook::register(signal_hook::SIGINT, move || {
+            std::fs::File::create("killed").unwrap();
+            m.write().unwrap().set_message("Use the :q command to quit");
+        }) }.unwrap();
+
+        let mut s = termion().unwrap();
+
         let layout = NamedView::new(
             "Frame",
             LinearLayout::vertical().child(NamedView::new("Main", app)),
