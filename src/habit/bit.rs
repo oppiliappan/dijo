@@ -100,11 +100,22 @@ impl Habit for Bit {
     fn goal(&self) -> u32 {
         return 1;
     }
-    fn modify(&mut self, date: NaiveDate, _: TrackEvent) {
+    fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
         if let Some(val) = self.stats.get_mut(&date) {
-            *val = (val.0 ^ true).into();
+            match event {
+                TrackEvent::Increment => *val = (val.0 ^ true).into(),
+                TrackEvent::Decrement => {
+                    if val.0 {
+                        *val = false.into();
+                    } else {
+                        self.stats.remove(&date);
+                    }
+                }
+            }
         } else {
-            self.insert_entry(date, CustomBool(true));
+            if event == TrackEvent::Increment {
+                self.insert_entry(date, CustomBool(true));
+            }
         }
     }
     fn set_view_month_offset(&mut self, offset: u32) {

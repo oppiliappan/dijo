@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::default;
 use std::fmt;
 
+#[derive(Debug, PartialEq)]
 pub enum TrackEvent {
     Increment,
     Decrement,

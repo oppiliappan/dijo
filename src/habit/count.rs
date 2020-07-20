@@ -84,12 +84,15 @@ impl Habit for Count {
                     if *val > 0 {
                         *val -= 1
                     } else {
-                        *val = 0
+                        self.stats.remove(&date);
                     };
                 }
             }
         } else {
-            self.insert_entry(date, 1);
+            match event {
+                TrackEvent::Increment => self.insert_entry(date, 1),
+                _ => {}
+            };
         }
     }
     fn set_view_month_offset(&mut self, offset: u32) {
