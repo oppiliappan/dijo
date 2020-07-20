@@ -12,7 +12,7 @@ use crate::command::{open_command_window, Command};
 use crate::utils::{load_configuration_file, AppConfig};
 
 use clap::{App as ClapApp, Arg};
-use cursive::termion;
+use cursive::crossterm;
 use cursive::views::{LinearLayout, NamedView};
 use lazy_static::lazy_static;
 
@@ -50,7 +50,7 @@ fn main() {
             ),
         }
     } else {
-        let mut s = termion().unwrap();
+        let mut s = crossterm().unwrap();
         let app = App::load_state();
         let layout = NamedView::new(
             "Frame",
