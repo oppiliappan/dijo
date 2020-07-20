@@ -25,7 +25,10 @@ much like a certain text editor.
 
 Get `dijo` by running the following at the nearest prompt:
 
-```
+```shell
+# dijo requires rustc >= v1.42
+$ rustup update
+
 $ cargo install dijo
 ```
 
