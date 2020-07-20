@@ -233,7 +233,16 @@ impl App {
                 Command::Quit => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),
-                Command::Blank => {}
+                Command::SetName(n) => {
+                    if self.habits.is_empty() {
+                        self.message
+                            .set_message("Can't call command `set` on empty habit list!");
+                        self.message.set_kind(MessageKind::Error);
+                        return;
+                    }
+                    self.habits[self.focus].set_name(n);
+                }
+                _ | Command::Blank => {}
             },
             Err(e) => {
                 self.message.set_message(e.to_string());

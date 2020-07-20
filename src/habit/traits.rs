@@ -40,6 +40,7 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn required_size(&mut self, _: Vec2) -> Vec2;
     fn take_focus(&mut self, _: Direction) -> bool;
     fn name(&self) -> String;
+    fn set_name(&mut self, name: String);
 
     fn set_view_month_offset(&mut self, offset: u32);
     fn view_month_offset(&self) -> u32;
@@ -50,6 +51,8 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn is_auto(&self) -> bool;
 }
 
+// typetag dosen't support generics yet, we have to resort to dollar store generics,
+// aka macros
 macro_rules! auto_habit_impl {
     ($struct_name:ident) => {
         #[typetag::serde]
@@ -80,6 +83,9 @@ macro_rules! auto_habit_impl {
             }
             fn name(&self) -> String {
                 Habit::name(self)
+            }
+            fn set_name(&mut self, n: String) {
+                Habit::set_name(self, &n)
             }
             fn set_view_month_offset(&mut self, offset: u32) {
                 Habit::set_view_month_offset(self, offset)

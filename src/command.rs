@@ -59,6 +59,8 @@ pub enum Command {
     Delete(String),
     TrackUp(String),
     TrackDown(String),
+    SetGoal(u32),
+    SetName(String),
     Quit,
     Blank,
 }
@@ -136,6 +138,13 @@ impl Command {
             }
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),
             "mnext" | "month-next" => return Ok(Command::MonthNext),
+            "set-name" | "setn" => {
+                if args.is_empty() {
+                    return Err(CommandLineError::NotEnoughArgs(first, 1));
+                }
+                let name = &args[0];
+                return Ok(Command::SetName(name.clone()));
+            }
             "q" | "quit" => return Ok(Command::Quit),
             "" => return Ok(Command::Blank),
             s => return Err(CommandLineError::InvalidCommand(s.into())),
