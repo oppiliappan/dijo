@@ -118,7 +118,7 @@ impl App {
     }
 
     pub fn status(&self) -> StatusLine {
-        let today = chrono::Local::now().naive_utc().date();
+        let today = chrono::Local::now().naive_local().date();
         let remaining = self.habits.iter().map(|h| h.remaining(today)).sum::<u32>();
         let total = self.habits.iter().map(|h| h.goal()).sum::<u32>();
         let completed = total - remaining;
@@ -207,7 +207,7 @@ impl App {
                 .iter_mut()
                 .find(|x| x.name() == name && x.is_auto());
             if let Some(h) = target_habit {
-                h.modify(Local::now().naive_utc().date(), event);
+                h.modify(Local::now().naive_local().date(), event);
             }
         };
         match result {
