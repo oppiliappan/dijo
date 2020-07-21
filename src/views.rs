@@ -5,7 +5,7 @@ use cursive::view::View;
 use cursive::{Printer, Vec2};
 
 use chrono::prelude::*;
-use chrono::{Duration, Local, NaiveDate};
+use chrono::{Duration, Local, NaiveDate, Weekday};
 
 use crate::habit::{Bit, Count, Habit, TrackEvent, ViewMode};
 
@@ -111,6 +111,21 @@ where
         };
 
         let draw_day = |printer: &Printer| {
+            let offset = match NaiveDate::from_ymd_opt(year, month, 1) {
+                Some(d) => {
+                    match d.weekday() {
+                        Weekday::Mon => 0,
+                        Weekday::Tue => 1,
+                        Weekday::Wed => 2,
+                        Weekday::Thu => 3,
+                        Weekday::Fri => 4,
+                        Weekday::Sat => 5,
+                        Weekday::Sun => 6,
+                    }
+                }
+                None => 0
+            };
+
             let mut i = 0;
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
                 let day_style;
@@ -119,7 +134,8 @@ where
                 } else {
                     day_style = todo_style;
                 }
-                let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
+                let pos = i + offset;
+                let coords: Vec2 = ((pos % 7) * 3, pos / 7 + 2).into();
                 if let Some(c) = self.get_by_date(d) {
                     printer.with_style(day_style, |p| {
                         p.print(coords, &format!("{:^3}", c));
