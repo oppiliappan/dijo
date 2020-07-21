@@ -230,6 +230,29 @@ impl App {
                 Command::TrackDown(name) => {
                     _track(&name, TrackEvent::Decrement);
                 }
+                Command::Help(input) => {
+                    if let Some(topic) = input.as_ref().map(String::as_ref) {
+                        self.message.set_message(
+                            match topic {
+                                "a"     | "add" => "add <habit-name> [goal]     (alias: a)",
+                                "aa"    | "add-auto" => "add-auto <habit-name> [goal]     (alias: aa)",
+                                "d"     | "delete" => "delete <habit-name>     (alias: d)",
+                                "mprev" | "month-prev" => "month-prev     (alias: mprev)",
+                                "mnext" | "month-next" => "month-next     (alias: mnext)",
+                                "tup"   | "track-up" => "track-up <auto-habit-name>     (alias: tup)",
+                                "tdown" | "track-down" => "track-down <auto-habit-name>     (alias: tdown)",
+                                "q"     | "quit" => "quit",
+                                "h"|"?" | "help" => "help [<command>|commands|keys]     (aliases: h, ?)",
+                                "cmds"  | "commands" => "add, add-auto, delete, month-{prev,next}, track-{up,down}, help, quit",
+                                "keys" => "TODO", // TODO (view?)
+                                _ => "unknown command or help topic.",
+                            }
+                        )
+                    } else {
+                        // TODO (view?)
+                        self.message.set_message("help <command>|commands|keys")
+                    }
+                }
                 Command::Quit => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),

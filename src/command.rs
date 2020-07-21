@@ -59,15 +59,16 @@ pub enum Command {
     Delete(String),
     TrackUp(String),
     TrackDown(String),
+    Help(Option<String>),
     Quit,
     Blank,
 }
 
 #[derive(Debug)]
 pub enum CommandLineError {
-    InvalidCommand(String),
-    InvalidArg(u32), // position
-    NotEnoughArgs(String, u32),
+    InvalidCommand(String),     // command name
+    InvalidArg(u32),            // position
+    NotEnoughArgs(String, u32), // command name, required no. of args
 }
 
 impl std::error::Error for CommandLineError {}
@@ -133,6 +134,12 @@ impl Command {
                     return Err(CommandLineError::NotEnoughArgs(first, 1));
                 }
                 return Ok(Command::TrackDown(args[0].to_string()));
+            }
+            "h" | "?" | "help" => {
+                if args.is_empty() {
+                    return Ok(Command::Help(None));
+                }
+                return Ok(Command::Help(Some(args[0].to_string())));
             }
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),
             "mnext" | "month-next" => return Ok(Command::MonthNext),
