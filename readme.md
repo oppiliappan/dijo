@@ -19,7 +19,7 @@ much like a certain text editor.
  - **vim like command mode**: add with `:add`, delete with
    `:delete` and above all, quit with `:q`!.
  - **fully scriptable**: [configure `dijo` to
-   track your `git` commits](./Auto-Habits)!
+   track your `git` commits](https://github.com/NerdyPepper/dijo/wiki/Auto-Habits)!
 
 ### Install
 
