@@ -1,5 +1,4 @@
 use std::fmt;
-use std::rc::Rc;
 
 use cursive::event::{Event, EventResult, Key};
 use cursive::theme::{BaseColor, Color, ColorStyle};
