@@ -257,7 +257,7 @@ impl App {
                         self.message.set_message("help <command>|commands|keys")
                     }
                 }
-                Command::Quit => self.save_state(),
+                Command::Quit | Command::Write => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),
                 Command::Blank => {}

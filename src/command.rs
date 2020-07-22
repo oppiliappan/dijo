@@ -17,6 +17,7 @@ static COMMANDS: &'static [&'static str] = &[
     "month-prev",
     "month-next",
     "quit",
+    "write",
     "help",
 ];
 
@@ -113,6 +114,7 @@ pub enum Command {
     TrackUp(String),
     TrackDown(String),
     Help(Option<String>),
+    Write,
     Quit,
     Blank,
 }
@@ -197,6 +199,7 @@ impl Command {
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),
             "mnext" | "month-next" => return Ok(Command::MonthNext),
             "q" | "quit" => return Ok(Command::Quit),
+            "w" | "write" => return Ok(Command::Write),
             "" => return Ok(Command::Blank),
             s => return Err(CommandLineError::InvalidCommand(s.into())),
         }
