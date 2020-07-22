@@ -37,6 +37,10 @@ impl App {
         self.habits.push(h);
     }
 
+    pub fn list_habits(&self) -> Vec<String> {
+        self.habits.iter().map(|x| x.name()).collect::<Vec<_>>()
+    }
+
     pub fn delete_by_name(&mut self, name: &str) {
         let old_len = self.habits.len();
         self.habits.retain(|h| h.name() != name);

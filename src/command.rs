@@ -1,21 +1,75 @@
 use std::fmt;
+use std::rc::Rc;
 
+use cursive::event::{Event, EventResult, Key};
 use cursive::theme::{BaseColor, Color, ColorStyle};
 use cursive::view::Resizable;
-use cursive::views::{EditView, LinearLayout, TextView};
+use cursive::views::{EditView, LinearLayout, OnEventView, TextView};
 use cursive::Cursive;
 
 use crate::{app::App, CONFIGURATION};
 
+static COMMANDS: &'static [&'static str] = &[
+    "add",
+    "add-auto",
+    "delete",
+    "track-up",
+    "track-down",
+    "month-prev",
+    "month-next",
+    "quit",
+    "help",
+];
+
+fn get_command_completion(prefix: &str) -> Option<String> {
+    let first_match = COMMANDS.iter().filter(|&x| x.starts_with(prefix)).next();
+    return first_match.map(|&x| x.into());
+}
+
+fn get_habit_completion(prefix: &str, habit_names: &[String]) -> Option<String> {
+    let first_match = habit_names.iter().filter(|&x| x.starts_with(prefix)).next();
+    eprintln!("{:?}| {:?}", prefix, first_match);
+    return first_match.map(|x| x.into());
+}
+
 pub fn open_command_window(s: &mut Cursive) {
-    let command_window = EditView::new()
-        .filler(" ")
-        .on_submit(call_on_app)
-        .style(ColorStyle::new(
-            Color::Dark(BaseColor::Black),
-            Color::Dark(BaseColor::White),
-        ))
-        .fixed_width(CONFIGURATION.view_width * CONFIGURATION.grid_width);
+    let habit_list: Vec<String> = s
+        .call_on_name("Main", |view: &mut App| {
+            return view.list_habits();
+        })
+        .unwrap();
+    let style = ColorStyle::new(Color::Dark(BaseColor::Black), Color::Dark(BaseColor::White));
+    let command_window = OnEventView::new(
+        EditView::new()
+            .filler(" ")
+            .on_submit(call_on_app)
+            .style(style),
+    )
+    .on_event_inner(
+        Event::Key(Key::Tab),
+        move |view: &mut EditView, _: &Event| {
+            let contents = view.get_content();
+            if !contents.contains(" ") {
+                let completion = get_command_completion(&*contents);
+                if let Some(c) = completion {
+                    let cb = view.set_content(c);
+                    return Some(EventResult::Consumed(Some(cb)));
+                };
+                return None;
+            } else {
+                let word = contents.split(' ').last().unwrap();
+                let completion = get_habit_completion(word, &habit_list);
+                eprintln!("{:?} | {:?}", completion, contents);
+                if let Some(c) = completion {
+                    let cb =
+                        view.set_content(format!("{}", contents) + c.strip_prefix(word).unwrap());
+                    return Some(EventResult::Consumed(Some(cb)));
+                };
+                return None;
+            }
+        },
+    )
+    .fixed_width(CONFIGURATION.view_width * CONFIGURATION.grid_width);
     s.call_on_name("Frame", |view: &mut LinearLayout| {
         let mut commandline = LinearLayout::horizontal()
             .child(TextView::new(":"))
