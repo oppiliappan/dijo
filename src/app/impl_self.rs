@@ -34,10 +34,7 @@ impl App {
     }
 
     pub fn list_habit(&self) -> Vec<String> {
-        let mut habits_names: Vec<String> = vec![];
-        for h in self.habits.iter() {
-            habits_names.push(h.name())
-        }
+        let habits_names = self.habits.iter().map(|x| x.name()).collect::<Vec<_>>();
         return habits_names;
     }
 
@@ -49,6 +46,7 @@ impl App {
             .count()
             > 0
         {
+            self.message.set_kind(MessageKind::Error);
             self.message
                 .set_message(format!("Habit `{}` allready exist", h.name()))
         } else {
