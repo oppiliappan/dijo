@@ -39,7 +39,7 @@ jobs:
           && sudo apt-get install -y \
           libdbus-1-dev
       - name: Build
-        run: cargo build --all --release && strip target/release/dijo
+        run: cargo build -all --no-default-features --features unix --release && strip target/release/dijo
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
@@ -72,7 +72,7 @@ jobs:
           override: true
 
       - name: Build for mac
-        run: cargo build --all --release && strip target/release/dijo
+        run: cargo build --all --no-default-features --features unix --release && strip target/release/dijo
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
@@ -106,7 +106,7 @@ jobs:
 
       - name: Build for windows
         run: |
-          cargo build --all --release
+          cargo build --all --no-default-features --features windows --release
           strip target/release/dijo
 
       - name: Upload binaries to release

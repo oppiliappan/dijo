@@ -13,7 +13,7 @@ use crate::utils::{load_configuration_file, AppConfig};
 
 use clap::{App as ClapApp, Arg};
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use cursive::termion;
 
 #[cfg(target_os = "windows")]
@@ -71,7 +71,7 @@ fn main() {
         #[cfg(target_os = "windows")]
         let mut s = crossterm().unwrap();
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
         let mut s = termion().unwrap();
 
         let app = App::load_state();
