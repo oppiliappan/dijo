@@ -33,6 +33,14 @@ fn main() {
                 .value_name("CMD")
                 .help("run a dijo command"),
         )
+        .arg(
+            Arg::with_name("list")
+                .short("l")
+                .long("list")
+                .takes_value(false)
+                .help("list dijo habits")
+                .conflicts_with("command"),
+        )
         .get_matches();
     if let Some(c) = matches.value_of("command") {
         let command = Command::from_string(c);
@@ -48,6 +56,10 @@ fn main() {
             _ => eprintln!(
                 "Commands other than `track-up` and `track-down` are currently not supported!"
             ),
+        }
+    } else if matches.is_present("list") {
+        for h in App::load_state().list_habits() {
+            println!("{}", h);
         }
     } else {
         let mut s = termion().unwrap();

@@ -217,6 +217,12 @@ impl App {
         match result {
             Ok(c) => match c {
                 Command::Add(name, goal, auto) => {
+                    if let Some(_) = self.habits.iter().find(|x| x.name() == name) {
+                        self.message.set_kind(MessageKind::Error);
+                        self.message
+                            .set_message(format!("Habit `{}` already exist", &name));
+                        return;
+                    }
                     let kind = if goal == Some(1) { "bit" } else { "count" };
                     if kind == "count" {
                         self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0), auto)));
