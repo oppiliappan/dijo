@@ -33,8 +33,25 @@ impl App {
         };
     }
 
+    pub fn list_habit(&self) -> Vec<String> {
+        let habits_names = self.habits.iter().map(|x| x.name()).collect::<Vec<_>>();
+        return habits_names;
+    }
+
     pub fn add_habit(&mut self, h: Box<dyn HabitWrapper>) {
-        self.habits.push(h);
+        if self
+            .habits
+            .iter()
+            .filter(|hab| hab.name() == h.name())
+            .count()
+            > 0
+        {
+            self.message.set_kind(MessageKind::Error);
+            self.message
+                .set_message(format!("Habit `{}` allready exist", h.name()))
+        } else {
+            self.habits.push(h);
+        }
     }
 
     pub fn list_habits(&self) -> Vec<String> {
