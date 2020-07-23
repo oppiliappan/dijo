@@ -122,7 +122,6 @@ pub enum Command {
 #[derive(Debug)]
 pub enum CommandLineError {
     InvalidCommand(String),     // command name
-    InvalidArg(u32),            // position
     NotEnoughArgs(String, u32), // command name, required no. of args
 }
 
@@ -132,7 +131,6 @@ impl fmt::Display for CommandLineError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             CommandLineError::InvalidCommand(s) => write!(f, "Invalid command: `{}`", s),
-            CommandLineError::InvalidArg(p) => write!(f, "Invalid argument at position {}", p),
             CommandLineError::NotEnoughArgs(s, n) => {
                 write!(f, "Command `{}` requires atleast {} argument(s)!", s, n)
             }
@@ -150,23 +148,9 @@ impl Command {
         }
 
         let first = strings.first().unwrap().to_string();
-        let mut args: Vec<String> = strings.iter_mut().skip(1).map(|s| s.to_string()).collect();
+        let args: Vec<String> = strings.iter_mut().skip(1).map(|s| s.to_string()).collect();
         let mut _add = |auto: bool, first: String| {
-            if args.is_empty() {
-                return Err(CommandLineError::NotEnoughArgs(first, 1));
-            }
-            let goal = args
-                .get(1)
-                .map(|x| {
-                    x.parse::<u32>()
-                        .map_err(|_| CommandLineError::InvalidArg(2))
-                })
-                .transpose()?;
-            return Ok(Command::Add(
-                args.get_mut(0).unwrap().to_string(),
-                goal,
-                auto,
-            ));
+            return parse_add(first, args.clone(), auto);
         };
 
         match first.as_ref() {
@@ -202,6 +186,84 @@ impl Command {
             "w" | "write" => return Ok(Command::Write),
             "" => return Ok(Command::Blank),
             s => return Err(CommandLineError::InvalidCommand(s.into())),
+        }
+    }
+}
+
+fn parse_add(verb: String, args: Vec<String>, auto: bool) -> Result<Command> {
+    if args.is_empty() {
+        return Err(CommandLineError::NotEnoughArgs(verb, 1));
+    }
+
+    let mut pos = 1;
+    let mut acc = "".to_owned();
+    let mut new_goal: Option<u32> = None;
+    for s1 in args {
+        if pos == 1 {
+            acc.push_str(&s1);
+        } else {
+            if let Ok(n) = s1.parse::<u32>() {
+                new_goal = Some(n);
+            } else {
+                acc.push(' ');
+                acc.push_str(&s1);
+            }
+        }
+        pos = pos + 1;
+    }
+
+    return Ok(Command::Add(acc, new_goal, auto));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_add_command_with_goal() {
+        let command: Vec<String> = "eat healthy 3"
+            .trim()
+            .split(' ')
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
+
+        let verb = "add".to_owned();
+        let auto = false;
+
+        let result = parse_add(verb, command, auto);
+
+        match result.unwrap() {
+            Command::Add(name, goal, a) => {
+                assert_eq!(name, "eat healthy".to_owned());
+                assert_eq!(goal.unwrap(), 3);
+                assert_eq!(a, auto);
+            }
+            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn parse_add_command_without_goal() {
+        let command: Vec<String> = "eat healthy"
+            .trim()
+            .split(' ')
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
+
+        let verb = "add".to_owned();
+        let auto = false;
+
+        let result = parse_add(verb, command, auto);
+
+        match result.unwrap() {
+            Command::Add(name, goal, a) => {
+                assert_eq!(name, "eat healthy".to_owned());
+                assert!(goal.is_none());
+                assert_eq!(a, auto);
+            }
+            _ => panic!(),
         }
     }
 }
