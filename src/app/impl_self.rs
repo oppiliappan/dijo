@@ -128,7 +128,7 @@ impl App {
         let completed = total - remaining;
 
         let timestamp = if self.view_month_offset == 0 {
-            format!("{}", Local::now().date().format("%d/%b/%y"),)
+            format!("{}", Local::now().naive_local().date().format("%d/%b/%y"),)
         } else {
             let months = self.view_month_offset;
             format!("{}", format!("{} months ago", months),)
