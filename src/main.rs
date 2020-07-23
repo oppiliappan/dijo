@@ -58,9 +58,7 @@ fn main() {
             ),
         }
     } else if matches.is_present("list") {
-        let app = App::load_state();
-        let _habit_names = app.list_habit();
-        for h in _habit_names {
+        for h in App::load_state().list_habits() {
             println!("{}", h);
         }
     } else {

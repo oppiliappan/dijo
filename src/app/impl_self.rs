@@ -33,25 +33,8 @@ impl App {
         };
     }
 
-    pub fn list_habit(&self) -> Vec<String> {
-        let habits_names = self.habits.iter().map(|x| x.name()).collect::<Vec<_>>();
-        return habits_names;
-    }
-
     pub fn add_habit(&mut self, h: Box<dyn HabitWrapper>) {
-        if self
-            .habits
-            .iter()
-            .filter(|hab| hab.name() == h.name())
-            .count()
-            > 0
-        {
-            self.message.set_kind(MessageKind::Error);
-            self.message
-                .set_message(format!("Habit `{}` allready exist", h.name()))
-        } else {
-            self.habits.push(h);
-        }
+        self.habits.push(h);
     }
 
     pub fn list_habits(&self) -> Vec<String> {
@@ -234,6 +217,12 @@ impl App {
         match result {
             Ok(c) => match c {
                 Command::Add(name, goal, auto) => {
+                    if let Some(_) = self.habits.iter().find(|x| x.name() == name) {
+                        self.message.set_kind(MessageKind::Error);
+                        self.message
+                            .set_message(format!("Habit `{}` already exist", &name));
+                        return;
+                    }
                     let kind = if goal == Some(1) { "bit" } else { "count" };
                     if kind == "count" {
                         self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0), auto)));
