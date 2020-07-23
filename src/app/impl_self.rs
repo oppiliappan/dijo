@@ -37,6 +37,10 @@ impl App {
         self.habits.push(h);
     }
 
+    pub fn list_habits(&self) -> Vec<String> {
+        self.habits.iter().map(|x| x.name()).collect::<Vec<_>>()
+    }
+
     pub fn delete_by_name(&mut self, name: &str) {
         let old_len = self.habits.len();
         self.habits.retain(|h| h.name() != name);
@@ -118,13 +122,13 @@ impl App {
     }
 
     pub fn status(&self) -> StatusLine {
-        let today = chrono::Local::now().naive_utc().date();
+        let today = chrono::Local::now().naive_local().date();
         let remaining = self.habits.iter().map(|h| h.remaining(today)).sum::<u32>();
         let total = self.habits.iter().map(|h| h.goal()).sum::<u32>();
         let completed = total - remaining;
 
         let timestamp = if self.view_month_offset == 0 {
-            format!("{}", Local::now().date().format("%d/%b/%y"),)
+            format!("{}", Local::now().naive_local().date().format("%d/%b/%y"),)
         } else {
             let months = self.view_month_offset;
             format!("{}", format!("{} months ago", months),)
@@ -207,12 +211,18 @@ impl App {
                 .iter_mut()
                 .find(|x| x.name() == name && x.is_auto());
             if let Some(h) = target_habit {
-                h.modify(Local::now().naive_utc().date(), event);
+                h.modify(Local::now().naive_local().date(), event);
             }
         };
         match result {
             Ok(c) => match c {
                 Command::Add(name, goal, auto) => {
+                    if let Some(_) = self.habits.iter().find(|x| x.name() == name) {
+                        self.message.set_kind(MessageKind::Error);
+                        self.message
+                            .set_message(format!("Habit `{}` already exist", &name));
+                        return;
+                    }
                     let kind = if goal == Some(1) { "bit" } else { "count" };
                     if kind == "count" {
                         self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0), auto)));
@@ -230,7 +240,30 @@ impl App {
                 Command::TrackDown(name) => {
                     _track(&name, TrackEvent::Decrement);
                 }
-                Command::Quit => self.save_state(),
+                Command::Help(input) => {
+                    if let Some(topic) = input.as_ref().map(String::as_ref) {
+                        self.message.set_message(
+                            match topic {
+                                "a"     | "add" => "add <habit-name> [goal]     (alias: a)",
+                                "aa"    | "add-auto" => "add-auto <habit-name> [goal]     (alias: aa)",
+                                "d"     | "delete" => "delete <habit-name>     (alias: d)",
+                                "mprev" | "month-prev" => "month-prev     (alias: mprev)",
+                                "mnext" | "month-next" => "month-next     (alias: mnext)",
+                                "tup"   | "track-up" => "track-up <auto-habit-name>     (alias: tup)",
+                                "tdown" | "track-down" => "track-down <auto-habit-name>     (alias: tdown)",
+                                "q"     | "quit" => "quit",
+                                "h"|"?" | "help" => "help [<command>|commands|keys]     (aliases: h, ?)",
+                                "cmds"  | "commands" => "add, add-auto, delete, month-{prev,next}, track-{up,down}, help, quit",
+                                "keys" => "TODO", // TODO (view?)
+                                _ => "unknown command or help topic.",
+                            }
+                        )
+                    } else {
+                        // TODO (view?)
+                        self.message.set_message("help <command>|commands|keys")
+                    }
+                }
+                Command::Quit | Command::Write => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),
                 Command::Blank => {}

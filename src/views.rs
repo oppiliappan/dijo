@@ -43,7 +43,7 @@ where
         let strikethrough = Style::from(Effect::Strikethrough);
 
         let goal_status =
-            self.view_month_offset() == 0 && self.reached_goal(Local::now().naive_utc().date());
+            self.view_month_offset() == 0 && self.reached_goal(Local::now().naive_local().date());
 
         printer.with_style(
             Style::merge(&[
@@ -77,12 +77,20 @@ where
                 .collect::<Vec<_>>();
             for (week, line_nr) in days.chunks(7).zip(2..) {
                 let weekly_goal = self.goal() * week.len() as u32;
-                let is_this_week = week.contains(&Local::now().naive_utc().date());
+                let is_this_week = week.contains(&Local::now().naive_local().date());
                 let remaining = week.iter().map(|&i| self.remaining(i)).sum::<u32>();
                 let completions = weekly_goal - remaining;
                 let full = CONFIGURATION.view_width - 8;
-                let bars_to_fill = if weekly_goal > 0 {(completions * full as u32) / weekly_goal} else {0};
-                let percentage = if weekly_goal > 0 {(completions as f64 * 100.) / weekly_goal as f64} else {0.0};
+                let bars_to_fill = if weekly_goal > 0 {
+                    (completions * full as u32) / weekly_goal
+                } else {
+                    0
+                };
+                let percentage = if weekly_goal > 0 {
+                    (completions as f64 * 100.) / weekly_goal as f64
+                } else {
+                    0.0
+                };
                 printer.with_style(future_style, |p| {
                     p.print((4, line_nr), &"─".repeat(full));
                 });
@@ -141,7 +149,7 @@ where
     }
 
     fn on_event(&mut self, e: Event) -> EventResult {
-        let now = Local::now().naive_utc().date();
+        let now = Local::now().naive_local().date();
         if self.is_auto() {
             return EventResult::Ignored;
         }

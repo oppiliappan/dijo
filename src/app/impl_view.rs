@@ -102,25 +102,6 @@ impl View for App {
                 self.set_focus(Absolute::Down);
                 return EventResult::Consumed(None);
             }
-            Event::Char('d') => {
-                if self.habits.is_empty() {
-                    return EventResult::Consumed(None);
-                }
-                self.habits.remove(self.focus);
-                self.focus = self.focus.checked_sub(1).unwrap_or(0);
-                return EventResult::Consumed(None);
-            }
-            Event::Char('w') => {
-                // helper bind to test write to file
-                let j = serde_json::to_string_pretty(&self.habits).unwrap();
-                let mut file = File::create("foo.txt").unwrap();
-                file.write_all(j.as_bytes()).unwrap();
-                return EventResult::Consumed(None);
-            }
-            Event::Char('q') => {
-                self.save_state();
-                return EventResult::with_cb(|s| s.quit());
-            }
             Event::Char('v') => {
                 if self.habits.is_empty() {
                     return EventResult::Consumed(None);
