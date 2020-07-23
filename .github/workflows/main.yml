@@ -39,7 +39,7 @@ jobs:
           && sudo apt-get install -y \
           libdbus-1-dev
       - name: Build
-        run: cargo build --all --release && strip target/release/dijo
+        run: cargo build -all --no-default-features --features unix --release && strip target/release/dijo
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
@@ -72,7 +72,7 @@ jobs:
           override: true
 
       - name: Build for mac
-        run: cargo build --all --release && strip target/release/dijo
+        run: cargo build --all --no-default-features --features unix --release && strip target/release/dijo
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
@@ -80,5 +80,40 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/dijo
           asset_name: dijo-x86_64-apple
+          tag: ${{ github.ref }}
+          overwrite: true
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Cache Rust dependencies
+        uses: actions/cache@v1.0.1
+        with:
+          path: target
+          key: ${{ runner.OS }}-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.OS }}-build-
+      - name: Install latest rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: beta
+          target: x86_64-pc-windows-msvc
+          default: true
+          override: true
+
+      - name: Build for windows
+        run: |
+          cargo build --all --no-default-features --features windows --release
+          strip target/release/dijo
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/dijo
+          asset_name: dijo-x86_64-windows
           tag: ${{ github.ref }}
           overwrite: true

@@ -61,8 +61,7 @@ pub fn open_command_window(s: &mut Cursive) {
                 let completion = get_habit_completion(word, &habit_list);
                 eprintln!("{:?} | {:?}", completion, contents);
                 if let Some(c) = completion {
-                    let cb =
-                        view.set_content(format!("{}", contents) + c.strip_prefix(word).unwrap());
+                    let cb = view.set_content(format!("{}", contents) + &c[word.len()..]);
                     return Some(EventResult::Consumed(Some(cb)));
                 };
                 return None;

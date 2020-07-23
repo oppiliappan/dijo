@@ -12,7 +12,13 @@ use crate::command::{open_command_window, Command};
 use crate::utils::{load_configuration_file, AppConfig};
 
 use clap::{App as ClapApp, Arg};
+
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use cursive::termion;
+
+#[cfg(target_os = "windows")]
+use cursive::crossterm;
+
 use cursive::views::{LinearLayout, NamedView};
 use lazy_static::lazy_static;
 
@@ -33,6 +39,14 @@ fn main() {
                 .value_name("CMD")
                 .help("run a dijo command"),
         )
+        .arg(
+            Arg::with_name("list")
+                .short("l")
+                .long("list")
+                .takes_value(false)
+                .help("list dijo habits")
+                .conflicts_with("command"),
+        )
         .get_matches();
     if let Some(c) = matches.value_of("command") {
         let command = Command::from_string(c);
@@ -49,8 +63,17 @@ fn main() {
                 "Commands other than `track-up` and `track-down` are currently not supported!"
             ),
         }
+    } else if matches.is_present("list") {
+        for h in App::load_state().list_habits() {
+            println!("{}", h);
+        }
     } else {
+        #[cfg(target_os = "windows")]
+        let mut s = crossterm().unwrap();
+
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
         let mut s = termion().unwrap();
+
         let app = App::load_state();
         let layout = NamedView::new(
             "Frame",
