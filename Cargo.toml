@@ -1,6 +1,6 @@
 [package]
 name = "dijo"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Akshay <nerdy@peppe.rs>"]
 edition = "2018"
 description = "Scriptable, curses-based, digital habit tracker"
@@ -23,10 +23,7 @@ notify = "4.0"
 [dependencies.cursive]
 version = "0.15"
 default-features = false
-
-[features]
-unix = ["cursive/termion-backend"]
-windows = ["cursive/crossterm-backend"]
+features = ["pancurses-backend"]
 
 [dependencies.chrono]
 version = "0.4"
