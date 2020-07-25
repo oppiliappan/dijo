@@ -112,6 +112,9 @@ where
 
         let draw_day = |printer: &Printer| {
             let mut i = 0;
+            let month_weekday_start = NaiveDate::from_ymd(year, month, 1)
+                .weekday()
+                .number_from_monday();
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
                 let day_style;
                 if self.reached_goal(d) {
@@ -119,7 +122,11 @@ where
                 } else {
                     day_style = todo_style;
                 }
-                let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
+                let coords: Vec2 = (
+                    ((month_weekday_start + i) % 7) * 3,
+                    (month_weekday_start + i) / 7 + 2,
+                )
+                    .into();
                 if let Some(c) = self.get_by_date(d) {
                     printer.with_style(day_style, |p| {
                         p.print(coords, &format!("{:^3}", c));
