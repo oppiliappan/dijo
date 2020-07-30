@@ -251,7 +251,8 @@ impl App {
                                 "mnext" | "month-next" => "month-next     (alias: mnext)",
                                 "tup"   | "track-up" => "track-up <auto-habit-name>     (alias: tup)",
                                 "tdown" | "track-down" => "track-down <auto-habit-name>     (alias: tdown)",
-                                "q"     | "quit" => "quit",
+                                "q"     | "quit" => "quit dijo",
+                                "w"     | "write" => "write current state to disk   (alias: w)",
                                 "h"|"?" | "help" => "help [<command>|commands|keys]     (aliases: h, ?)",
                                 "cmds"  | "commands" => "add, add-auto, delete, month-{prev,next}, track-{up,down}, help, quit",
                                 "keys" => "TODO", // TODO (view?)

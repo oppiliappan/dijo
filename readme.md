@@ -32,6 +32,12 @@ $ rustup update
 $ cargo install dijo
 ```
 
+`dijo` on nixpkgs (maintained by [@Infinisil](https://github.com/Infinisil)):
+
+```
+$ nix-env -f channel:nixpkgs-unstable -iA dijo
+```
+
 If you aren't familiar with `cargo` or Rust, read the [complete
 installation](https://github.com/NerdyPepper/dijo/wiki/Install)
 guide.

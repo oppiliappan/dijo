@@ -12,13 +12,7 @@ use crate::command::{open_command_window, Command};
 use crate::utils::{load_configuration_file, AppConfig};
 
 use clap::{App as ClapApp, Arg};
-
-#[cfg(any(target_os = "linux", target_os = "macos"))]
-use cursive::termion;
-
-#[cfg(target_os = "windows")]
-use cursive::crossterm;
-
+use cursive::pancurses;
 use cursive::views::{LinearLayout, NamedView};
 use lazy_static::lazy_static;
 
@@ -68,11 +62,7 @@ fn main() {
             println!("{}", h);
         }
     } else {
-        #[cfg(target_os = "windows")]
-        let mut s = crossterm().unwrap();
-
-        #[cfg(any(target_os = "linux", target_os = "macos"))]
-        let mut s = termion().unwrap();
+        let mut s = pancurses().unwrap();
 
         let app = App::load_state();
         let layout = NamedView::new(

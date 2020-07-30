@@ -37,9 +37,9 @@ jobs:
         run: |
           sudo apt-get update \
           && sudo apt-get install -y \
-          libdbus-1-dev
+          libdbus-1-dev libncurses5-dev libncursesw5-dev
       - name: Build
-        run: cargo build -all --no-default-features --features unix --release && strip target/release/dijo
+        run: cargo build  --release && strip target/release/dijo
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
@@ -72,7 +72,7 @@ jobs:
           override: true
 
       - name: Build for mac
-        run: cargo build --all --no-default-features --features unix --release && strip target/release/dijo
+        run: cargo build --release && strip target/release/dijo
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
@@ -105,15 +105,14 @@ jobs:
           override: true
 
       - name: Build for windows
-        run: |
-          cargo build --all --no-default-features --features windows --release
-          strip target/release/dijo
+        shell: bash
+        run: cargo build --release
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/release/dijo
-          asset_name: dijo-x86_64-windows
+          file: target/release/dijo.exe
+          asset_name: dijo-x86_64-windows.exe
           tag: ${{ github.ref }}
           overwrite: true
