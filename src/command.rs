@@ -118,9 +118,25 @@ pub enum Command {
     Blank,
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug)]
+enum CommandName {
+    Add,
+    AddAuto,
+    MonthPrev,
+    MonthNext,
+    Delete,
+    TrackUp,
+    TrackDown,
+    Help,
+    Write,
+    Quit,
+    Blank,
+}
+
+#[derive(PartialEq, Debug)]
 pub enum CommandLineError {
     InvalidCommand(String),     // command name
+    InvalidArg(u32),            // position
     NotEnoughArgs(String, u32), // command name, required no. of args
 }
 
@@ -130,6 +146,7 @@ impl fmt::Display for CommandLineError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             CommandLineError::InvalidCommand(s) => write!(f, "Invalid command: `{}`", s),
+            CommandLineError::InvalidArg(p) => write!(f, "Invalid argument at position {}", p),
             CommandLineError::NotEnoughArgs(s, n) => {
                 write!(f, "Command `{}` requires atleast {} argument(s)!", s, n)
             }
@@ -141,77 +158,191 @@ type Result<T> = std::result::Result<T, CommandLineError>;
 
 impl Command {
     pub fn from_string<P: AsRef<str>>(input: P) -> Result<Command> {
-        let mut strings: Vec<&str> = input.as_ref().trim().split(' ').collect();
-        if strings.is_empty() {
-            return Ok(Command::Blank);
-        }
-
-        let first = strings.first().unwrap().to_string();
-        let args: Vec<String> = strings.iter_mut().skip(1).map(|s| s.to_string()).collect();
-        let mut _add = |auto: bool, first: String| {
-            return parse_add(first, args.clone(), auto);
-        };
-
-        match first.as_ref() {
-            "add" | "a" => _add(false, first),
-            "add-auto" | "aa" => _add(true, first),
-            "delete" | "d" => {
-                if args.is_empty() {
-                    return Err(CommandLineError::NotEnoughArgs(first, 1));
-                }
-                return Ok(Command::Delete(args[0].to_string()));
+        let input_str = input.as_ref().trim();
+        let parsed = parse_command_name(input_str);
+        if let Ok((command_name, rest)) = parsed {
+            match command_name {
+                CommandName::Add => return parse_add(rest),
+                CommandName::AddAuto => return parse_add_auto(rest),
+                CommandName::Delete => return parse_delete(rest),
+                CommandName::TrackUp => return parse_track_up(rest),
+                CommandName::TrackDown => return parse_track_down(rest),
+                CommandName::Help => return parse_help(rest),
+                CommandName::MonthPrev => return Ok(Command::MonthPrev),
+                CommandName::MonthNext => return Ok(Command::MonthNext),
+                CommandName::Quit => return Ok(Command::Quit),
+                CommandName::Write => return Ok(Command::Write),
+                CommandName::Blank => return Ok(Command::Blank),
             }
-            "track-up" | "tup" => {
-                if args.is_empty() {
-                    return Err(CommandLineError::NotEnoughArgs(first, 1));
-                }
-                return Ok(Command::TrackUp(args[0].to_string()));
-            }
-            "track-down" | "tdown" => {
-                if args.is_empty() {
-                    return Err(CommandLineError::NotEnoughArgs(first, 1));
-                }
-                return Ok(Command::TrackDown(args[0].to_string()));
-            }
-            "h" | "?" | "help" => {
-                if args.is_empty() {
-                    return Ok(Command::Help(None));
-                }
-                return Ok(Command::Help(Some(args[0].to_string())));
-            }
-            "mprev" | "month-prev" => return Ok(Command::MonthPrev),
-            "mnext" | "month-next" => return Ok(Command::MonthNext),
-            "q" | "quit" => return Ok(Command::Quit),
-            "w" | "write" => return Ok(Command::Write),
-            "" => return Ok(Command::Blank),
-            s => return Err(CommandLineError::InvalidCommand(s.into())),
+        } else {
+            return Err(parsed.err().unwrap());
         }
     }
 }
 
-fn parse_add(verb: String, args: Vec<String>, auto: bool) -> Result<Command> {
-    if args.is_empty() {
-        return Err(CommandLineError::NotEnoughArgs(verb, 1));
+fn parse_command_name(input: &str) -> Result<(CommandName, &str)> {
+    let chars = input.trim().chars();
+    let mut parsed_name = "".to_owned();
+    let mut pos = 0;
+
+    for c in chars {
+        pos = pos + 1;
+        if c == ' ' {
+            break;
+        }
+
+        parsed_name.push(c);
     }
 
-    let mut pos = 1;
-    let mut acc = "".to_owned();
-    let mut new_goal: Option<u32> = None;
-    for s1 in args {
-        if pos == 1 {
-            acc.push_str(&s1);
-        } else {
-            if let Ok(n) = s1.parse::<u32>() {
-                new_goal = Some(n);
+    match parsed_name.as_ref() {
+        "add" | "a" => Ok((CommandName::Add, &input[pos..])),
+        "add-auto" | "aa" => Ok((CommandName::AddAuto, &input[pos..])),
+        "delete" | "d" => Ok((CommandName::Delete, &input[pos..])),
+        "track-up" | "tup" => Ok((CommandName::TrackUp, &input[pos..])),
+        "track-down" | "tdown" => Ok((CommandName::TrackDown, &input[pos..])),
+        "h" | "?" | "help" => Ok((CommandName::Help, &input[pos..])),
+        "mprev" => Ok((CommandName::MonthPrev, &input[pos..])),
+        "mnext" => Ok((CommandName::MonthNext, &input[pos..])),
+        "quit" | "q" => Ok((CommandName::Quit, &input[pos..])),
+        "write" | "w" => Ok((CommandName::Write, &input[pos..])),
+        "" => Ok((CommandName::Blank, &input[pos..])),
+        _ => Err(CommandLineError::InvalidCommand(parsed_name)),
+    }
+}
+
+fn parse_name(input: &str) -> (String, &str) {
+    let chars = input.trim().chars();
+    let mut name = "".to_owned();
+    let mut pos = 0;
+    let mut parenthesis = false;
+
+    for c in chars {
+        pos = pos + 1;
+        if c == '"' || c == '\"' {
+            if parenthesis {
+                return (name, &input[pos..]);
             } else {
-                acc.push(' ');
-                acc.push_str(&s1);
+                parenthesis = true;
+                continue;
             }
         }
-        pos = pos + 1;
+
+        if parenthesis {
+            name.push(c);
+            continue;
+        }
+
+        if c == ' ' {
+            break;
+        }
+
+        name.push(c);
     }
 
-    return Ok(Command::Add(acc, new_goal, auto));
+    (name, &input[pos..])
+}
+
+fn parse_goal(input: &str) -> Option<(Option<u32>, &str)> {
+    let chars = input.trim().chars();
+    let mut goal_string = "".to_owned();
+    let mut pos = 0;
+
+    if input.is_empty() {
+        return Some((None, input));
+    }
+
+    for c in chars {
+        pos = pos + 1;
+        if c == ' ' {
+            break;
+        }
+
+        goal_string.push(c);
+    }
+
+    let parsed = goal_string.parse::<u32>();
+
+    if parsed.is_err() {
+        return None;
+    }
+
+    if pos + 1 > input.len() {
+        return Some((parsed.ok(), ""));
+    }
+
+    Some((parsed.ok(), &input[pos..]))
+}
+
+fn parse_add(input: &str) -> Result<Command> {
+    let (name, rest) = parse_name(input);
+
+    if name.is_empty() {
+        return Err(CommandLineError::NotEnoughArgs("add".to_owned(), 2));
+    }
+
+    let parsed_goal = parse_goal(rest);
+
+    if parsed_goal.is_none() {
+        return Err(CommandLineError::InvalidArg(2));
+    }
+
+    Ok(Command::Add(name, parsed_goal.unwrap().0, false))
+}
+
+fn parse_add_auto(input: &str) -> Result<Command> {
+    let (name, rest) = parse_name(input);
+
+    if name.is_empty() {
+        return Err(CommandLineError::NotEnoughArgs("add-auto".to_owned(), 2));
+    }
+
+    let parsed_goal = parse_goal(rest);
+
+    if parsed_goal.is_none() {
+        return Err(CommandLineError::InvalidArg(2));
+    }
+
+    Ok(Command::Add(name, parsed_goal.unwrap().0, true))
+}
+
+fn parse_delete(input: &str) -> Result<Command> {
+    let (name, _) = parse_name(input);
+
+    if name.is_empty() {
+        return Err(CommandLineError::NotEnoughArgs("delete".to_owned(), 1));
+    }
+
+    Ok(Command::Delete(name))
+}
+
+fn parse_track_up(input: &str) -> Result<Command> {
+    let (name, _) = parse_name(input);
+
+    if name.is_empty() {
+        return Err(CommandLineError::NotEnoughArgs("track-up".to_owned(), 1));
+    }
+
+    Ok(Command::TrackUp(name))
+}
+
+fn parse_track_down(input: &str) -> Result<Command> {
+    let (name, _) = parse_name(input);
+
+    if name.is_empty() {
+        return Err(CommandLineError::NotEnoughArgs("track-down".to_owned(), 1));
+    }
+
+    Ok(Command::TrackDown(name))
+}
+
+fn parse_help(input: &str) -> Result<Command> {
+    let (name, _) = parse_name(input);
+
+    if name.is_empty() {
+        return Ok(Command::Help(None));
+    }
+
+    Ok(Command::Help(Some(name)))
 }
 
 #[cfg(test)]
@@ -220,113 +351,179 @@ mod tests {
 
     #[test]
     fn parse_add_command() {
-        let result = Command::from_string("add eat 2");
+        let inputs = ["add eat 2", "a eat 2"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat");
-                assert_eq!(goal.unwrap(), 2);
-                assert_eq!(auto, false);
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Add(name, goal, auto) => {
+                    assert_eq!(name, "eat");
+                    assert_eq!(goal.unwrap(), 2);
+                    assert_eq!(auto, false);
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
         }
     }
 
     #[test]
     fn parse_add_command_without_goal() {
-        let result = Command::from_string("add eat");
+        let inputs = ["add eat", "a eat"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat");
-                assert!(goal.is_none());
-                assert_eq!(auto, false);
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Add(name, goal, auto) => {
+                    assert_eq!(name, "eat");
+                    assert!(goal.is_none());
+                    assert_eq!(auto, false);
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
         }
     }
 
-    // #[test]
+    #[test]
     fn parse_add_command_with_long_name() {
-        let result = Command::from_string("add \"eat healthy\" 5");
+        let inputs = ["add \"eat healthy\" 5", "a \"eat healthy\" 5"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat healthy");
-                assert_eq!(goal.unwrap(), 5);
-                assert_eq!(auto, false);
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Add(name, goal, auto) => {
+                    assert_eq!(name, "eat healthy");
+                    assert_eq!(goal.unwrap(), 5);
+                    assert_eq!(auto, false);
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
         }
     }
 
     #[test]
     fn parse_add_auto_command() {
-        let result = Command::from_string("add-auto eat 2");
+        let inputs = ["add-auto eat 2", "aa eat 2"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat");
-                assert_eq!(goal.unwrap(), 2);
-                assert_eq!(auto, true);
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Add(name, goal, auto) => {
+                    assert_eq!(name, "eat");
+                    assert_eq!(goal.unwrap(), 2);
+                    assert_eq!(auto, true);
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
         }
     }
 
     #[test]
     fn parse_delete_command() {
-        let result = Command::from_string("delete eat");
+        let inputs = ["delete eat", "d eat"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Delete(name) => {
-                assert_eq!(name, "eat");
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Delete(name) => {
+                    assert_eq!(name, "eat");
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn parse_delete_long_name_command() {
+        let inputs = ["delete \"eat healthy\"", "d \"eat healthy\""];
+
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Delete(name) => {
+                    assert_eq!(name, "eat healthy");
+                }
+                _ => panic!(),
+            }
         }
     }
 
     #[test]
     fn parse_track_up_command() {
-        let result = Command::from_string("track-up eat");
+        let inputs = ["track-up eat", "tup eat"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::TrackUp(name) => {
-                assert_eq!(name, "eat");
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::TrackUp(name) => {
+                    assert_eq!(name, "eat");
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
         }
     }
 
     #[test]
     fn parse_track_down_command() {
-        let result = Command::from_string("track-down eat");
+        let inputs = ["track-down eat", "tdown eat"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::TrackDown(name) => {
-                assert_eq!(name, "eat");
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::TrackDown(name) => {
+                    assert_eq!(name, "eat");
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
         }
     }
 
     #[test]
     fn parse_help_command() {
-        let result = Command::from_string("help add");
+        let inputs = ["help add", "? add", "h add"];
 
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Help(name) => {
-                assert_eq!(name.unwrap(), "add");
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Help(name) => {
+                    assert_eq!(name.unwrap(), "add");
+                }
+                _ => panic!(),
             }
-            _ => panic!(),
+        }
+    }
+
+    #[test]
+    fn parse_help_global_command() {
+        let inputs = ["help", "?", "h"];
+
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            match result.unwrap() {
+                Command::Help(name) => {
+                    assert!(name.is_none());
+                }
+                _ => panic!(),
+            }
         }
     }
 
@@ -348,18 +545,26 @@ mod tests {
 
     #[test]
     fn parse_quit_command() {
-        let result = Command::from_string("q");
+        let inputs = ["q", "quit"];
 
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Quit);
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), Command::Quit);
+        }
     }
 
     #[test]
     fn parse_write_command() {
-        let result = Command::from_string("w");
+        let inputs = ["w", "write"];
 
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Write);
+        for input in inputs.iter() {
+            let result = Command::from_string(input);
+
+            assert!(result.is_ok());
+            assert_eq!(result.unwrap(), Command::Write);
+        }
     }
 
     #[test]
@@ -368,5 +573,56 @@ mod tests {
 
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), Command::Blank);
+    }
+
+    #[test]
+    fn parse_error_invalid_command() {
+        let input = "non-existing-command".to_owned();
+        let result = Command::from_string(&input);
+
+        assert!(result.is_err());
+        assert_eq!(
+            result.err().unwrap(),
+            CommandLineError::InvalidCommand(input)
+        );
+    }
+
+    #[test]
+    fn parse_error_not_enough_args() {
+        let test_cases = [
+            ("add".to_owned(), "add".to_owned(), 2),
+            ("add-auto".to_owned(), "add-auto".to_owned(), 2),
+            ("delete".to_owned(), "delete".to_owned(), 1),
+            ("track-up".to_owned(), "track-up".to_owned(), 1),
+            ("track-down".to_owned(), "track-down".to_owned(), 1),
+        ];
+
+        for test_case in test_cases.iter() {
+            let result = Command::from_string(&test_case.0);
+
+            assert!(result.is_err());
+            assert_eq!(
+                result.err().unwrap(),
+                CommandLineError::NotEnoughArgs(test_case.1.clone(), test_case.2)
+            );
+        }
+    }
+
+    #[test]
+    fn parse_error_invalid_arg() {
+        let test_cases = [
+            ("add habit n".to_owned(), 2),
+            ("add-auto habit n".to_owned(), 2),
+        ];
+
+        for test_case in test_cases.iter() {
+            let result = Command::from_string(&test_case.0);
+
+            assert!(result.is_err());
+            assert_eq!(
+                result.err().unwrap(),
+                CommandLineError::InvalidArg(test_case.1)
+            );
+        }
     }
 }
