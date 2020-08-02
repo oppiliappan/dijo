@@ -181,32 +181,24 @@ impl Command {
 }
 
 fn parse_command_name(input: &str) -> Result<(CommandName, &str)> {
-    let chars = input.trim().chars();
-    let mut parsed_name = "".to_owned();
-    let mut pos = 0;
+    let pieces: Vec<&str> = input.trim().splitn(2, ' ').collect();
 
-    for c in chars {
-        pos = pos + 1;
-        if c == ' ' {
-            break;
-        }
+    let command = pieces.first().unwrap();
+    let rest = pieces.iter().skip(1).next().map(|&x| x).unwrap_or("");
 
-        parsed_name.push(c);
-    }
-
-    match parsed_name.as_ref() {
-        "add" | "a" => Ok((CommandName::Add, &input[pos..])),
-        "add-auto" | "aa" => Ok((CommandName::AddAuto, &input[pos..])),
-        "delete" | "d" => Ok((CommandName::Delete, &input[pos..])),
-        "track-up" | "tup" => Ok((CommandName::TrackUp, &input[pos..])),
-        "track-down" | "tdown" => Ok((CommandName::TrackDown, &input[pos..])),
-        "h" | "?" | "help" => Ok((CommandName::Help, &input[pos..])),
-        "mprev" => Ok((CommandName::MonthPrev, &input[pos..])),
-        "mnext" => Ok((CommandName::MonthNext, &input[pos..])),
-        "quit" | "q" => Ok((CommandName::Quit, &input[pos..])),
-        "write" | "w" => Ok((CommandName::Write, &input[pos..])),
-        "" => Ok((CommandName::Blank, &input[pos..])),
-        _ => Err(CommandLineError::InvalidCommand(parsed_name)),
+    match command.as_ref() {
+        "add" | "a" => Ok((CommandName::Add, rest)),
+        "add-auto" | "aa" => Ok((CommandName::AddAuto, rest)),
+        "delete" | "d" => Ok((CommandName::Delete, rest)),
+        "track-up" | "tup" => Ok((CommandName::TrackUp, rest)),
+        "track-down" | "tdown" => Ok((CommandName::TrackDown, rest)),
+        "h" | "?" | "help" => Ok((CommandName::Help, rest)),
+        "mprev" => Ok((CommandName::MonthPrev, "")),
+        "mnext" => Ok((CommandName::MonthNext, "")),
+        "quit" | "q" => Ok((CommandName::Quit, "")),
+        "write" | "w" => Ok((CommandName::Write, "")),
+        "" => Ok((CommandName::Blank, "")),
+        c => Err(CommandLineError::InvalidCommand(c.to_string())),
     }
 }
 
@@ -590,20 +582,22 @@ mod tests {
     #[test]
     fn parse_error_not_enough_args() {
         let test_cases = [
-            ("add".to_owned(), "add".to_owned(), 2),
-            ("add-auto".to_owned(), "add-auto".to_owned(), 2),
-            ("delete".to_owned(), "delete".to_owned(), 1),
-            ("track-up".to_owned(), "track-up".to_owned(), 1),
-            ("track-down".to_owned(), "track-down".to_owned(), 1),
-        ];
+            ("add", "add", 2),
+            ("add-auto", "add-auto", 2),
+            ("delete", "delete", 1),
+            ("track-up", "track-up", 1),
+            ("track-down", "track-down", 1),
+        ]
+        .iter()
+        .map(|(a, b, c)| (a.to_owned(), b.to_owned(), c));
 
-        for test_case in test_cases.iter() {
-            let result = Command::from_string(&test_case.0);
+        for test_case in test_cases {
+            let result = Command::from_string(test_case.0);
 
             assert!(result.is_err());
             assert_eq!(
                 result.err().unwrap(),
-                CommandLineError::NotEnoughArgs(test_case.1.clone(), test_case.2)
+                CommandLineError::NotEnoughArgs(test_case.1.to_string(), *test_case.2)
             );
         }
     }
