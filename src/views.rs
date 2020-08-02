@@ -36,9 +36,9 @@ where
         let year = now.year();
         let month = now.month();
 
-        let goal_reached_style = Style::from(CONFIGURATION.reached_color);
-        let todo_style = Style::from(CONFIGURATION.todo_color);
-        let future_style = Style::from(CONFIGURATION.future_color);
+        let goal_reached_style = Style::from(CONFIGURATION.reached_color());
+        let todo_style = Style::from(CONFIGURATION.todo_color());
+        let future_style = Style::from(CONFIGURATION.future_color());
 
         let strikethrough = Style::from(Effect::Strikethrough);
 

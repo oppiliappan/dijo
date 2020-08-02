@@ -1,8 +1,14 @@
 use cursive::theme::{BaseColor, Color};
 use directories::ProjectDirs;
+use serde::Deserialize;
+use std;
 use std::fs;
+use std::fs::File;
+use std::io::Read;
 use std::path::PathBuf;
 
+#[derive(Deserialize)]
+#[serde(default = "default_config")]
 pub struct AppConfig {
     pub true_chr: char,
     pub false_chr: char,
@@ -14,13 +20,33 @@ pub struct AppConfig {
 
     // app dimensions
     pub grid_width: usize,
+}
 
-    pub reached_color: Color,
-    pub todo_color: Color,
-    pub future_color: Color,
+impl AppConfig {
+    // TODO: implement string parsing from config.json
+    pub fn reached_color(&self) -> Color {
+        return Color::Dark(BaseColor::Cyan);
+    }
+    pub fn todo_color(&self) -> Color {
+        return Color::Dark(BaseColor::Magenta);
+    }
+    pub fn future_color(&self) -> Color {
+        return Color::Dark(BaseColor::Magenta);
+    }
 }
 
 pub fn load_configuration_file() -> AppConfig {
+    let config_f = config_file();
+    if let Ok(ref mut f) = File::open(config_f) {
+        let mut j = String::new();
+        f.read_to_string(&mut j);
+        return serde_json::from_str(&j).unwrap();
+    } else {
+        return default_config();
+    }
+}
+
+pub fn default_config() -> AppConfig {
     return AppConfig {
         true_chr: '·',
         false_chr: '·',
@@ -28,15 +54,20 @@ pub fn load_configuration_file() -> AppConfig {
         view_width: 25,
         view_height: 8,
         grid_width: 3,
-        reached_color: Color::Dark(BaseColor::Cyan),
-        todo_color: Color::Dark(BaseColor::Magenta),
-        future_color: Color::Light(BaseColor::Black),
     };
 }
 
 fn project_dirs() -> ProjectDirs {
     ProjectDirs::from("rs", "nerdypepper", "dijo")
         .unwrap_or_else(|| panic!("Invalid home directory!"))
+}
+
+pub fn config_file() -> PathBuf {
+    let proj_dirs = project_dirs();
+    let mut data_file = PathBuf::from(proj_dirs.data_dir());
+    fs::create_dir_all(&data_file);
+    data_file.push("config.json");
+    return data_file;
 }
 
 pub fn habit_file() -> PathBuf {
