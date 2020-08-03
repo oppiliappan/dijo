@@ -29,7 +29,6 @@ fn get_command_completion(prefix: &str) -> Option<String> {
 
 fn get_habit_completion(prefix: &str, habit_names: &[String]) -> Option<String> {
     let first_match = habit_names.iter().filter(|&x| x.starts_with(prefix)).next();
-    eprintln!("{:?}| {:?}", prefix, first_match);
     return first_match.map(|x| x.into());
 }
 
@@ -60,7 +59,6 @@ pub fn open_command_window(s: &mut Cursive) {
             } else {
                 let word = contents.split(' ').last().unwrap();
                 let completion = get_habit_completion(word, &habit_list);
-                eprintln!("{:?} | {:?}", completion, contents);
                 if let Some(c) = completion {
                     let cb = view.set_content(format!("{}", contents) + &c[word.len()..]);
                     return Some(EventResult::Consumed(Some(cb)));
