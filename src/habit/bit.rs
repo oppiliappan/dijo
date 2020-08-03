@@ -18,9 +18,9 @@ impl fmt::Display for CustomBool {
             f,
             "{:^3}",
             if self.0 {
-                CONFIGURATION.true_chr
+                CONFIGURATION.look.true_chr
             } else {
-                CONFIGURATION.false_chr
+                CONFIGURATION.look.false_chr
             }
         )
     }

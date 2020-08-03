@@ -8,6 +8,7 @@ use chrono::prelude::*;
 use chrono::{Duration, Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Habit, TrackEvent, ViewMode};
+use crate::utils::VIEW_WIDTH;
 
 use crate::CONFIGURATION;
 
@@ -38,7 +39,7 @@ where
 
         let goal_reached_style = Style::from(CONFIGURATION.reached_color());
         let todo_style = Style::from(CONFIGURATION.todo_color());
-        let future_style = Style::from(CONFIGURATION.future_color());
+        let future_style = Style::from(CONFIGURATION.inactive_color());
 
         let strikethrough = Style::from(Effect::Strikethrough);
 
@@ -61,11 +62,7 @@ where
             |p| {
                 p.print(
                     (0, 0),
-                    &format!(
-                        " {:.width$} ",
-                        self.name(),
-                        width = CONFIGURATION.view_width - 6
-                    ),
+                    &format!(" {:.width$} ", self.name(), width = VIEW_WIDTH - 6),
                 );
             },
         );
@@ -80,7 +77,7 @@ where
                 let is_this_week = week.contains(&Local::now().naive_local().date());
                 let remaining = week.iter().map(|&i| self.remaining(i)).sum::<u32>();
                 let completions = weekly_goal - remaining;
-                let full = CONFIGURATION.view_width - 8;
+                let full = VIEW_WIDTH - 8;
                 let bars_to_fill = if weekly_goal > 0 {
                     (completions * full as u32) / weekly_goal
                 } else {
@@ -126,7 +123,7 @@ where
                     });
                 } else {
                     printer.with_style(future_style, |p| {
-                        p.print(coords, &format!("{:^3}", CONFIGURATION.future_chr));
+                        p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
                     });
                 }
                 i += 1;

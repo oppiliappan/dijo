@@ -13,8 +13,7 @@ use notify::{watcher, RecursiveMode, Watcher};
 
 use crate::command::{Command, CommandLineError};
 use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
-use crate::utils;
-use crate::CONFIGURATION;
+use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
 
 use crate::app::{App, MessageKind, StatusLine};
 
@@ -87,7 +86,6 @@ impl App {
     }
 
     pub fn set_focus(&mut self, d: Absolute) {
-        let grid_width = CONFIGURATION.grid_width;
         match d {
             Absolute::Right => {
                 if self.focus != self.habits.len() - 1 {
@@ -100,15 +98,15 @@ impl App {
                 }
             }
             Absolute::Down => {
-                if self.focus + grid_width < self.habits.len() - 1 {
-                    self.focus += grid_width;
+                if self.focus + GRID_WIDTH < self.habits.len() - 1 {
+                    self.focus += GRID_WIDTH;
                 } else {
                     self.focus = self.habits.len() - 1;
                 }
             }
             Absolute::Up => {
-                if self.focus as isize - grid_width as isize >= 0 {
-                    self.focus -= grid_width;
+                if self.focus as isize - GRID_WIDTH as isize >= 0 {
+                    self.focus -= GRID_WIDTH;
                 } else {
                     self.focus = 0;
                 }
@@ -146,12 +144,10 @@ impl App {
     }
 
     pub fn max_size(&self) -> Vec2 {
-        let grid_width = CONFIGURATION.grid_width;
-        let width = grid_width * CONFIGURATION.view_width;
+        let width = GRID_WIDTH * VIEW_WIDTH;
         let height = {
             if !self.habits.is_empty() {
-                (CONFIGURATION.view_height as f64
-                    * (self.habits.len() as f64 / grid_width as f64).ceil())
+                (VIEW_HEIGHT as f64 * (self.habits.len() as f64 / GRID_WIDTH as f64).ceil())
                     as usize
             } else {
                 0
