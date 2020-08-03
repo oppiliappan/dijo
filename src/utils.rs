@@ -1,60 +1,117 @@
 use cursive::theme::{BaseColor, Color};
 use directories::ProjectDirs;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
 use std;
-use std::fs;
-use std::fs::File;
-use std::io::Read;
+use std::default::Default;
+use std::fs::{self, File, OpenOptions};
+use std::io::{Read, Write};
 use std::path::PathBuf;
 
-#[derive(Deserialize)]
-#[serde(default = "default_config")]
-pub struct AppConfig {
+pub const VIEW_WIDTH: usize = 25;
+pub const VIEW_HEIGHT: usize = 8;
+pub const GRID_WIDTH: usize = 3;
+
+#[derive(Serialize, Deserialize)]
+pub struct Characters {
+    #[serde(default = "base_char")]
     pub true_chr: char,
+    #[serde(default = "base_char")]
     pub false_chr: char,
+    #[serde(default = "base_char")]
     pub future_chr: char,
+}
 
-    // view dimensions
-    pub view_width: usize,
-    pub view_height: usize,
+fn base_char() -> char {
+    '·'
+}
 
-    // app dimensions
-    pub grid_width: usize,
+impl Default for Characters {
+    fn default() -> Self {
+        Characters {
+            true_chr: '·',
+            false_chr: '·',
+            future_chr: '·',
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Colors {
+    #[serde(default = "cyan")]
+    pub reached: String,
+    #[serde(default = "magenta")]
+    pub todo: String,
+    #[serde(default = "light_black")]
+    pub inactive: String,
+}
+
+fn cyan() -> String {
+    "cyan".into()
+}
+fn magenta() -> String {
+    "magenta".into()
+}
+fn light_black() -> String {
+    "light_black".into()
+}
+
+impl Default for Colors {
+    fn default() -> Self {
+        Colors {
+            reached: cyan(),
+            todo: magenta(),
+            inactive: light_black(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AppConfig {
+    #[serde(default)]
+    pub look: Characters,
+
+    #[serde(default)]
+    pub colors: Colors,
+}
+
+impl Default for AppConfig {
+    fn default() -> Self {
+        AppConfig {
+            look: Default::default(),
+            colors: Default::default(),
+        }
+    }
 }
 
 impl AppConfig {
     // TODO: implement string parsing from config.json
     pub fn reached_color(&self) -> Color {
-        return Color::Dark(BaseColor::Cyan);
+        return Color::parse(&self.colors.reached).unwrap_or(Color::Dark(BaseColor::Cyan));
     }
     pub fn todo_color(&self) -> Color {
-        return Color::Dark(BaseColor::Magenta);
+        return Color::parse(&self.colors.todo).unwrap_or(Color::Dark(BaseColor::Magenta));
     }
-    pub fn future_color(&self) -> Color {
-        return Color::Dark(BaseColor::Magenta);
+    pub fn inactive_color(&self) -> Color {
+        return Color::parse(&self.colors.inactive).unwrap_or(Color::Light(BaseColor::Black));
     }
 }
 
 pub fn load_configuration_file() -> AppConfig {
-    let config_f = config_file();
-    if let Ok(ref mut f) = File::open(config_f) {
+    let cf = config_file();
+    if let Ok(ref mut f) = File::open(&cf) {
         let mut j = String::new();
         f.read_to_string(&mut j);
-        return serde_json::from_str(&j).unwrap();
+        return toml::from_str(&j).unwrap();
     } else {
-        return default_config();
+        if let Ok(dc) = toml::to_string(&AppConfig::default()) {
+            match OpenOptions::new().create(true).write(true).open(&cf) {
+                Ok(ref mut file) => file.write(dc.as_bytes()).unwrap(),
+                Err(_) => 0,
+            };
+        }
+        return Default::default();
     }
-}
-
-pub fn default_config() -> AppConfig {
-    return AppConfig {
-        true_chr: '·',
-        false_chr: '·',
-        future_chr: '·',
-        view_width: 25,
-        view_height: 8,
-        grid_width: 3,
-    };
 }
 
 fn project_dirs() -> ProjectDirs {
@@ -64,9 +121,9 @@ fn project_dirs() -> ProjectDirs {
 
 pub fn config_file() -> PathBuf {
     let proj_dirs = project_dirs();
-    let mut data_file = PathBuf::from(proj_dirs.data_dir());
+    let mut data_file = PathBuf::from(proj_dirs.config_dir());
     fs::create_dir_all(&data_file);
-    data_file.push("config.json");
+    data_file.push("config.toml");
     return data_file;
 }
 
