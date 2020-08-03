@@ -105,7 +105,7 @@ fn call_on_app(s: &mut Cursive, input: &str) {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq)]
 pub enum Command {
     Add(String, Option<u32>, bool),
     MonthPrev,
@@ -220,15 +220,24 @@ mod tests {
     use super::*;
 
     #[test]
-    fn parse_add_command() {
-        let result = Command::from_string("add eat 2");
+    fn parse_add_command_with_goal() {
+        let command: Vec<String> = "eat healthy 3"
+            .trim()
+            .split(' ')
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
 
-        assert!(result.is_ok());
+        let verb = "add".to_owned();
+        let auto = false;
+
+        let result = parse_add(verb, command, auto);
+
         match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat");
-                assert_eq!(goal.unwrap(), 2);
-                assert_eq!(auto, false);
+            Command::Add(name, goal, a) => {
+                assert_eq!(name, "eat healthy".to_owned());
+                assert_eq!(goal.unwrap(), 3);
+                assert_eq!(a, auto);
             }
             _ => panic!(),
         }
@@ -236,138 +245,25 @@ mod tests {
 
     #[test]
     fn parse_add_command_without_goal() {
-        let result = Command::from_string("add eat");
+        let command: Vec<String> = "eat healthy"
+            .trim()
+            .split(' ')
+            .into_iter()
+            .map(|s| s.to_string())
+            .collect();
 
-        assert!(result.is_ok());
+        let verb = "add".to_owned();
+        let auto = false;
+
+        let result = parse_add(verb, command, auto);
+
         match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat");
+            Command::Add(name, goal, a) => {
+                assert_eq!(name, "eat healthy".to_owned());
                 assert!(goal.is_none());
-                assert_eq!(auto, false);
+                assert_eq!(a, auto);
             }
             _ => panic!(),
         }
-    }
-
-    // #[test]
-    fn parse_add_command_with_long_name() {
-        let result = Command::from_string("add \"eat healthy\" 5");
-
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat healthy");
-                assert_eq!(goal.unwrap(), 5);
-                assert_eq!(auto, false);
-            }
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn parse_add_auto_command() {
-        let result = Command::from_string("add-auto eat 2");
-
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Add(name, goal, auto) => {
-                assert_eq!(name, "eat");
-                assert_eq!(goal.unwrap(), 2);
-                assert_eq!(auto, true);
-            }
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn parse_delete_command() {
-        let result = Command::from_string("delete eat");
-
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Delete(name) => {
-                assert_eq!(name, "eat");
-            }
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn parse_track_up_command() {
-        let result = Command::from_string("track-up eat");
-
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::TrackUp(name) => {
-                assert_eq!(name, "eat");
-            }
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn parse_track_down_command() {
-        let result = Command::from_string("track-down eat");
-
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::TrackDown(name) => {
-                assert_eq!(name, "eat");
-            }
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn parse_help_command() {
-        let result = Command::from_string("help add");
-
-        assert!(result.is_ok());
-        match result.unwrap() {
-            Command::Help(name) => {
-                assert_eq!(name.unwrap(), "add");
-            }
-            _ => panic!(),
-        }
-    }
-
-    #[test]
-    fn parse_month_prev_command() {
-        let result = Command::from_string("mprev");
-
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::MonthPrev);
-    }
-
-    #[test]
-    fn parse_month_next_command() {
-        let result = Command::from_string("mnext");
-
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::MonthNext);
-    }
-
-    #[test]
-    fn parse_quit_command() {
-        let result = Command::from_string("q");
-
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Quit);
-    }
-
-    #[test]
-    fn parse_write_command() {
-        let result = Command::from_string("w");
-
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Write);
-    }
-
-    #[test]
-    fn parse_no_command() {
-        let result = Command::from_string("");
-
-        assert!(result.is_ok());
-        assert_eq!(result.unwrap(), Command::Blank);
     }
 }
