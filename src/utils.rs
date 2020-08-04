@@ -53,7 +53,7 @@ fn magenta() -> String {
     "magenta".into()
 }
 fn light_black() -> String {
-    "light_black".into()
+    "light black".into()
 }
 
 impl Default for Colors {
