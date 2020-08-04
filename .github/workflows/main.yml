@@ -106,7 +106,7 @@ jobs:
 
       - name: Build for windows
         shell: bash
-        run: cargo build --release
+        run: cargo build --release --no-default-features --features "crossterm-backend"
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release

@@ -12,7 +12,13 @@ use crate::command::{open_command_window, Command};
 use crate::utils::{load_configuration_file, AppConfig};
 
 use clap::{App as ClapApp, Arg};
-use cursive::pancurses;
+
+#[cfg(any(feature = "termion-backend", feature = "default"))]
+use cursive::termion;
+
+#[cfg(feature = "crossterm-backend")]
+use cursive::crossterm;
+
 use cursive::views::{LinearLayout, NamedView};
 use lazy_static::lazy_static;
 
@@ -62,7 +68,11 @@ fn main() {
             println!("{}", h);
         }
     } else {
-        let mut s = pancurses().unwrap();
+        #[cfg(any(feature = "termion-backend", feature = "default"))]
+        let mut s = termion().unwrap();
+
+        #[cfg(feature = "crossterm-backend")]
+        let mut s = crossterm().unwrap();
 
         let app = App::load_state();
         let layout = NamedView::new(

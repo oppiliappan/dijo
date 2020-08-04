@@ -24,7 +24,6 @@ toml = "0.5.6"
 [dependencies.cursive]
 version = "0.15"
 default-features = false
-features = ["pancurses-backend"]
 
 [dependencies.chrono]
 version = "0.4"
@@ -33,3 +32,8 @@ features = ["serde"]
 [dependencies.serde]
 version = "1.0.103"
 features = ["derive"]
+
+[features]
+default = ["termion-backend"]
+termion-backend = ["cursive/termion-backend"]
+crossterm-backend = ["cursive/crossterm-backend"]
