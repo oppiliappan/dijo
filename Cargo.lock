@@ -271,7 +271,6 @@ dependencies = [
  "notify",
  "serde",
  "serde_json",
- "signal-hook",
  "typetag",
 ]
 

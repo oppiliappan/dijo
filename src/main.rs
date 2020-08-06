@@ -50,13 +50,11 @@ fn main() {
             ),
         }
     } else {
-        let app = App::load_state();
-        let m = app.message.clone();
-        unsafe { signal_hook::register(signal_hook::SIGINT, move || {
-            m.write().unwrap().set_message("Use the :q command to quit");
-        }) }.unwrap();
-
         let mut s = termion().unwrap();
+        let app = App::load_state();
+
+        // prevent Ctrl-C from killing the app and allow the app to override it.
+        s.clear_global_callbacks(cursive::event::Event::CtrlChar('c'));
 
         let layout = NamedView::new(
             "Frame",
@@ -66,7 +64,6 @@ fn main() {
         s.add_global_callback(':', |s| open_command_window(s));
 
         s.set_theme(theme::theme_gen());
-
         s.run();
     }
 }

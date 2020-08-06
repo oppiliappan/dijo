@@ -19,7 +19,6 @@ typetag = "0.1.4"
 directories = "3.0.1"
 clap = "2.33"
 notify = "4.0"
-signal-hook = "0.1.16"
 
 [dependencies.cursive]
 version = "0.15"

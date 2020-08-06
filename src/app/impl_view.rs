@@ -85,6 +85,7 @@ impl View for App {
         if self.habits.is_empty() {
             return EventResult::Ignored;
         }
+        let m = self.message.clone();
         match e {
             Event::Key(Key::Right) | Event::Key(Key::Tab) | Event::Char('l') => {
                 self.set_focus(Absolute::Right);
@@ -166,7 +167,7 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::CtrlChar('c') => {
-                self.message.write().unwrap().set_message("Use the :q command to quit");
+                m.write().unwrap().set_message("Use the :q command to quit");
                 return EventResult::Consumed(None);
             }
 

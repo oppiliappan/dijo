@@ -24,7 +24,6 @@ impl App {
         let (tx, rx) = channel();
         let mut watcher = watcher(tx, Duration::from_secs(1)).unwrap();
         watcher.watch(utils::auto_habit_file(), RecursiveMode::Recursive);
-
         return App {
             habits: vec![],
             focus: 0,
