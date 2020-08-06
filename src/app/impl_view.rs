@@ -165,6 +165,10 @@ impl View for App {
                 self.message.set_kind(MessageKind::Info);
                 return EventResult::Consumed(None);
             }
+            Event::CtrlChar('c') => {
+                self.message.set_message("Use the :q command to quit");
+                return EventResult::Consumed(None);
+            }
 
             /* Every keybind that is not caught by App trickles
              * down to the focused habit. We sift back to today
