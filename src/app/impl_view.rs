@@ -39,8 +39,8 @@ impl View for App {
         printer.print(offset, &status.1); // right status
 
         offset = offset.map_x(|_| 0).map_y(|_| self.max_size().y - 1);
-        printer.with_style(Color::from(self.message.read().unwrap().kind()), |p| {
-            p.print(offset, self.message.read().unwrap().contents())
+        printer.with_style(Color::from(self.message.kind()), |p| {
+            p.print(offset, self.message.contents())
         });
     }
 
@@ -85,7 +85,6 @@ impl View for App {
         if self.habits.is_empty() {
             return EventResult::Ignored;
         }
-        let m = self.message.clone();
         match e {
             Event::Key(Key::Right) | Event::Key(Key::Tab) | Event::Char('l') => {
                 self.set_focus(Absolute::Right);
@@ -162,12 +161,8 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::CtrlChar('l') => {
-                self.message.write().unwrap().clear();
-                self.message.write().unwrap().set_kind(MessageKind::Info);
-                return EventResult::Consumed(None);
-            }
-            Event::CtrlChar('c') => {
-                m.write().unwrap().set_message("Use the :q command to quit");
+                self.message.clear();
+                self.message.set_kind(MessageKind::Info);
                 return EventResult::Consumed(None);
             }
 

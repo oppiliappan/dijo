@@ -5,8 +5,6 @@ use notify::{DebouncedEvent, RecommendedWatcher};
 
 use crate::habit::HabitWrapper;
 
-use std::sync::{RwLock, Arc};
-
 mod impl_self;
 mod impl_view;
 mod message;
@@ -22,7 +20,7 @@ pub struct App {
     file_event_recv: Receiver<DebouncedEvent>,
     focus: usize,
     view_month_offset: u32,
-    pub message: Arc<RwLock<Message>>,
+    message: Message,
 }
 
 impl Default for App {
