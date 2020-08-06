@@ -52,10 +52,6 @@ fn main() {
     } else {
         let mut s = termion().unwrap();
         let app = App::load_state();
-
-        // prevent Ctrl-C from killing the app and allow the app to override it.
-        s.clear_global_callbacks(cursive::event::Event::CtrlChar('c'));
-
         let layout = NamedView::new(
             "Frame",
             LinearLayout::vertical().child(NamedView::new("Main", app)),
