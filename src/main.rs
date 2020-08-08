@@ -61,5 +61,12 @@ fn main() {
 
         s.set_theme(theme::theme_gen());
         s.run();
+
+        let app = std::rc::Rc::try_unwrap(s.find_name::<NamedView<App>>("Main").unwrap()
+                                .get_mut()
+                                .into_owner()
+                                .into_owner()).ok().unwrap().into_inner();
+        app.save_state();
+
     }
 }
