@@ -84,5 +84,7 @@ fn main() {
 
         s.set_theme(theme::theme_gen());
         s.run();
+
+        s.call_on_name("Main", |app: &mut App| app.save_state());
     }
 }
