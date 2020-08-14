@@ -23,7 +23,9 @@ much like a certain text editor.
 
 ### Install
 
-Get `dijo` by running the following at the nearest prompt:
+The official installation method is using `cargo`. Unofficial packages exist for some package managers as well.
+
+#### Cargo
 
 ```shell
 # dijo requires rustc >= v1.42
@@ -31,6 +33,11 @@ $ rustup update
 
 $ cargo install dijo
 ```
+If you aren't familiar with `cargo` or Rust, read the [complete
+installation](https://github.com/NerdyPepper/dijo/wiki/Install)
+guide.
+
+#### Nix
 
 `dijo` on nixpkgs (maintained by [@Infinisil](https://github.com/Infinisil)):
 
@@ -38,9 +45,9 @@ $ cargo install dijo
 $ nix-env -f channel:nixpkgs-unstable -iA dijo
 ```
 
-If you aren't familiar with `cargo` or Rust, read the [complete
-installation](https://github.com/NerdyPepper/dijo/wiki/Install)
-guide.
+#### Arch Linux
+
+Install [`dijo-bin`](https://aur.archlinux.org/packages/dijo-bin/) or [`dijo-git`](https://aur.archlinux.org/packages/dijo-git) from the AUR.
 
 ### Usage
 
