@@ -249,10 +249,10 @@ impl App {
                                 "tdown" | "track-down" => "track-down <auto-habit-name>     (alias: tdown)",
                                 "q"     | "quit" => "quit dijo",
                                 "w"     | "write" => "write current state to disk   (alias: w)",
-                                "wq"    | "writeandquit" => "write current state to disk and quit dijo (alias: wq)",
                                 "h"|"?" | "help" => "help [<command>|commands|keys]     (aliases: h, ?)",
                                 "cmds"  | "commands" => "add, add-auto, delete, month-{prev,next}, track-{up,down}, help, quit",
                                 "keys" => "TODO", // TODO (view?)
+                                "wq" =>   "write current state to disk and quit dijo",
                                 _ => "unknown command or help topic.",
                             }
                         )
@@ -261,8 +261,7 @@ impl App {
                         self.message.set_message("help <command>|commands|keys")
                     }
                 }
-                Command::WriteAndQuit => self.save_state(),
-                Command::Quit | Command::Write => self.save_state(),
+                Command::Quit | Command::Write | Command::WriteAndQuit => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),
                 Command::Blank => {}
