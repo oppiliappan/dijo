@@ -20,6 +20,7 @@ static COMMANDS: &'static [&'static str] = &[
     "quit",
     "write",
     "help",
+    "writeandquit",
 ];
 
 fn get_command_completion(prefix: &str) -> Option<String> {
@@ -98,8 +99,9 @@ fn call_on_app(s: &mut Cursive, input: &str) {
     // our main cursive object, has to be parsed again
     // here
     // TODO: fix this somehow
-    if let Ok(Command::Quit) = Command::from_string(input) {
-        s.quit();
+    match Command::from_string(input) {
+        Ok(Command::Quit) | Ok(Command::WriteAndQuit) => s.quit(),
+        _ => {}
     }
 }
 
@@ -115,6 +117,7 @@ pub enum Command {
     Write,
     Quit,
     Blank,
+    WriteAndQuit,
 }
 
 #[derive(Debug)]
@@ -196,6 +199,7 @@ impl Command {
             }
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),
             "mnext" | "month-next" => return Ok(Command::MonthNext),
+            "wq" | "writeandquit" => return Ok(Command::WriteAndQuit),
             "q" | "quit" => return Ok(Command::Quit),
             "w" | "write" => return Ok(Command::Write),
             "" => return Ok(Command::Blank),
