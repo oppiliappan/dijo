@@ -15,3 +15,5 @@
 
 *.vim
 .envrc
+.direnv
+result
