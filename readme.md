@@ -68,3 +68,5 @@ Day mode, shows days of the current month:
 Week mode, shows weekly summary for the weeks of the month:
 
 ![weekly.png](https://u.peppe.rs/HZ.png)
+
+[![Awesome Humane Tech](https://raw.githubusercontent.com/humanetech-community/awesome-humane-tech/main/humane-tech-badge.svg?sanitize=true)](https://github.com/humanetech-community/awesome-humane-tech)
