@@ -38,7 +38,7 @@
         nativeBuildInputs = [
           rust
           pkgs.cargo
-          pkgs.cargo
+          pkgs.openssl
           pkgs.ncurses
         ];
       };
