@@ -69,10 +69,10 @@ fn main() {
         }
     } else {
         #[cfg(any(feature = "termion-backend", feature = "default"))]
-        let mut s = termion().unwrap();
+        let mut s = termion();
 
         #[cfg(feature = "crossterm-backend")]
-        let mut s = crossterm().unwrap();
+        let mut s = crossterm();
 
         let app = App::load_state();
         let layout = NamedView::new(
