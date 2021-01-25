@@ -1,6 +1,6 @@
 use cursive::theme::Color::*;
 use cursive::theme::PaletteColor::*;
-use cursive::theme::{BorderStyle, Palette, Theme};
+use cursive::theme::{BorderStyle, ColorStyle, Palette, Style, Theme};
 
 pub fn pallete_gen() -> Palette {
     let mut p = Palette::default();
@@ -23,4 +23,11 @@ pub fn theme_gen() -> Theme {
     t.borders = BorderStyle::None;
     t.palette = pallete_gen();
     return t;
+}
+
+pub fn cursor_gen() -> Style {
+    Style::from(ColorStyle::new(
+        Light(cursive::theme::BaseColor::Blue),
+        TerminalDefault,
+    ))
 }

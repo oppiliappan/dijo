@@ -5,9 +5,10 @@ use cursive::view::View;
 use cursive::{Printer, Vec2};
 
 use chrono::prelude::*;
-use chrono::{Duration, Local, NaiveDate};
+use chrono::{Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Habit, TrackEvent, ViewMode};
+use crate::theme::cursor_gen;
 use crate::utils::VIEW_WIDTH;
 
 use crate::CONFIGURATION;
@@ -27,13 +28,15 @@ where
     T::HabitType: std::fmt::Display,
 {
     fn draw(&self, printer: &Printer) {
-        let now = if self.view_month_offset() == 0 {
-            Local::today()
-        } else {
-            Local::today()
-                .checked_sub_signed(Duration::weeks(4 * self.view_month_offset() as i64))
-                .unwrap()
-        };
+        // let now = if self.view_month_offset() == 0 {
+        //     Local::today()
+        // } else {
+        //     Local::today()
+        //         .checked_sub_signed(Duration::weeks(4 * self.view_month_offset() as i64))
+        //         .unwrap()
+        // };
+        let now = self.cursor().0;
+        let is_today = now == Local::now().naive_local().date();
         let year = now.year();
         let month = now.month();
 
@@ -41,10 +44,10 @@ where
         let todo_style = Style::from(CONFIGURATION.todo_color());
         let future_style = Style::from(CONFIGURATION.inactive_color());
 
+        let cursor_style = cursor_gen();
         let strikethrough = Style::from(Effect::Strikethrough);
 
-        let goal_status =
-            self.view_month_offset() == 0 && self.reached_goal(Local::now().naive_local().date());
+        let goal_status = is_today && self.reached_goal(Local::now().naive_local().date());
 
         printer.with_style(
             Style::merge(&[
@@ -110,11 +113,9 @@ where
         let draw_day = |printer: &Printer| {
             let mut i = 0;
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
-                let day_style;
+                let mut day_style = cursor_style.combine(todo_style);
                 if self.reached_goal(d) {
-                    day_style = goal_reached_style;
-                } else {
-                    day_style = todo_style;
+                    day_style = day_style.combine(goal_reached_style);
                 }
                 let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
                 if let Some(c) = self.get_by_date(d) {
@@ -146,7 +147,7 @@ where
     }
 
     fn on_event(&mut self, e: Event) -> EventResult {
-        let now = Local::now().naive_local().date();
+        let now = self.cursor().0;
         if self.is_auto() {
             return EventResult::Ignored;
         }

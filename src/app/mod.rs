@@ -5,11 +5,13 @@ use notify::{DebouncedEvent, RecommendedWatcher};
 
 use crate::habit::HabitWrapper;
 
+mod cursor;
 mod impl_self;
 mod impl_view;
 mod message;
 
 pub struct StatusLine(String, String);
+pub use cursor::Cursor;
 pub use message::{Message, MessageKind};
 
 pub struct App {
@@ -20,6 +22,7 @@ pub struct App {
     file_event_recv: Receiver<DebouncedEvent>,
     focus: usize,
     view_month_offset: u32,
+    cursor: Cursor,
     message: Message,
 }
 

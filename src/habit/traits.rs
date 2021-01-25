@@ -1,10 +1,11 @@
 use chrono::NaiveDate;
-use cursive::direction::Direction;
+use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult};
 use cursive::{Printer, Vec2};
 
 use typetag;
 
+use crate::app::Cursor;
 use crate::habit::{Bit, Count, TrackEvent, ViewMode};
 use crate::views::ShadowView;
 
@@ -23,6 +24,9 @@ pub trait Habit {
 
     fn set_view_month_offset(&mut self, offset: u32);
     fn view_month_offset(&self) -> u32;
+
+    fn move_cursor(&mut self, d: Absolute);
+    fn cursor(&self) -> Cursor;
 
     fn set_view_mode(&mut self, mode: ViewMode);
     fn view_mode(&self) -> ViewMode;
@@ -43,6 +47,9 @@ pub trait HabitWrapper: erased_serde::Serialize {
 
     fn set_view_month_offset(&mut self, offset: u32);
     fn view_month_offset(&self) -> u32;
+
+    fn move_cursor(&mut self, d: Absolute);
+    fn cursor(&self) -> Cursor;
 
     fn set_view_mode(&mut self, mode: ViewMode);
     fn view_mode(&self) -> ViewMode;
@@ -86,6 +93,12 @@ macro_rules! auto_habit_impl {
             }
             fn view_month_offset(&self) -> u32 {
                 Habit::view_month_offset(self)
+            }
+            fn move_cursor(&mut self, d: Absolute) {
+                Habit::move_cursor(self, d)
+            }
+            fn cursor(&self) -> Cursor {
+                Habit::cursor(self)
             }
             fn set_view_mode(&mut self, mode: ViewMode) {
                 Habit::set_view_mode(self, mode)

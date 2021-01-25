@@ -15,7 +15,7 @@ use crate::command::{Command, CommandLineError};
 use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
 
-use crate::app::{App, MessageKind, StatusLine};
+use crate::app::{App, Cursor, Message, MessageKind, StatusLine};
 
 impl App {
     pub fn new() -> Self {
@@ -28,7 +28,8 @@ impl App {
             _file_watcher: watcher,
             file_event_recv: rx,
             view_month_offset: 0,
-            message: "Type :add <habit-name> <goal> to get started, Ctrl-L to dismiss".into(),
+            cursor: Cursor::new(),
+            message: Message::startup(),
         };
     }
 
@@ -85,6 +86,13 @@ impl App {
         }
     }
 
+    pub fn move_cursor(&mut self, d: Absolute) {
+        self.cursor.do_move(d);
+        for v in self.habits.iter_mut() {
+            v.move_cursor(d);
+        }
+    }
+
     pub fn set_focus(&mut self, d: Absolute) {
         match d {
             Absolute::Right => {
@@ -129,7 +137,7 @@ impl App {
             format!("{}", Local::now().naive_local().date().format("%d/%b/%y"),)
         } else {
             let months = self.view_month_offset;
-            format!("{}", format!("{} months ago", months),)
+            format!("{}", format!("{} month(s) ago", months),)
         };
 
         StatusLine {

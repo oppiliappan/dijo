@@ -95,6 +95,24 @@ impl View for App {
                 self.set_focus(Absolute::Down);
                 return EventResult::Consumed(None);
             }
+
+            Event::Char('w') => {
+                self.move_cursor(Absolute::Up);
+                return EventResult::Consumed(None);
+            }
+            Event::Char('a') => {
+                self.move_cursor(Absolute::Left);
+                return EventResult::Consumed(None);
+            }
+            Event::Char('s') => {
+                self.move_cursor(Absolute::Down);
+                return EventResult::Consumed(None);
+            }
+            Event::Char('d') => {
+                self.move_cursor(Absolute::Right);
+                return EventResult::Consumed(None);
+            }
+
             Event::Char('v') => {
                 if self.habits.is_empty() {
                     return EventResult::Consumed(None);

@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
 use chrono::NaiveDate;
+use cursive::direction::Absolute;
 use serde::{Deserialize, Serialize};
 
+use crate::app::Cursor;
 use crate::habit::prelude::default_auto;
 use crate::habit::traits::Habit;
 use crate::habit::{TrackEvent, ViewMode};
@@ -45,6 +47,9 @@ pub struct Bit {
     view_month_offset: u32,
 
     #[serde(skip)]
+    cursor: Cursor,
+
+    #[serde(skip)]
     view_mode: ViewMode,
 }
 
@@ -56,6 +61,7 @@ impl Bit {
             goal: CustomBool(true),
             auto,
             view_month_offset: 0,
+            cursor: Cursor::new(),
             view_mode: ViewMode::Day,
         };
     }
@@ -123,6 +129,12 @@ impl Habit for Bit {
     }
     fn view_month_offset(&self) -> u32 {
         self.view_month_offset
+    }
+    fn move_cursor(&mut self, d: Absolute) {
+        self.cursor.do_move(d);
+    }
+    fn cursor(&self) -> Cursor {
+        self.cursor
     }
     fn set_view_mode(&mut self, mode: ViewMode) {
         self.view_mode = mode;
