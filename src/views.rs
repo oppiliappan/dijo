@@ -44,7 +44,6 @@ where
         let todo_style = Style::from(CONFIGURATION.todo_color());
         let future_style = Style::from(CONFIGURATION.inactive_color());
 
-        let cursor_style = cursor_gen();
         let strikethrough = Style::from(Effect::Strikethrough);
 
         let goal_status = is_today && self.reached_goal(Local::now().naive_local().date());
@@ -113,9 +112,12 @@ where
         let draw_day = |printer: &Printer| {
             let mut i = 0;
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
-                let mut day_style = cursor_style.combine(todo_style);
+                let mut day_style = todo_style;
                 if self.reached_goal(d) {
-                    day_style = day_style.combine(goal_reached_style);
+                    day_style = goal_reached_style;
+                }
+                if d == now && printer.focused {
+                    day_style = day_style.combine(cursor_gen(day_style));
                 }
                 let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
                 if let Some(c) = self.get_by_date(d) {

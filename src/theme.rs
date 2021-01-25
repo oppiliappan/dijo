@@ -25,9 +25,10 @@ pub fn theme_gen() -> Theme {
     return t;
 }
 
-pub fn cursor_gen() -> Style {
+pub fn cursor_gen(foreground: Style) -> Style {
     Style::from(ColorStyle::new(
-        Light(cursive::theme::BaseColor::Blue),
         TerminalDefault,
+        Light(cursive::theme::BaseColor::Blue),
     ))
+    .combine(foreground)
 }
