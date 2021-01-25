@@ -1,0 +1,479 @@
+.TH DIJO 1 "January 26, 2021" dijo-0.2.3
+
+.SH NAME
+dijo \- digital journal
+
+.SH SYNOPSIS
+.B dijo
+[\fBFLAGS\fR]
+[\fBOPTIONS\fR]
+
+.SH DESCRIPTION
+.B dijo
+is scriptable, curses-based and modal, much like \fIvim\fR, digital habit tracker
+
+.SH FLAGS
+.TP
+.BR \-h ", " \-\-help
+Prints help information
+.TP
+.BR \-l ", " \-\-list
+List dijo habits
+.TP
+.BR \-V ", " \-\-version
+Prints version information
+
+.SH OPTIONS
+.TP
+.BR \-c ", " \-\-command " " \fIcommand
+Run a dijo command
+
+.SH FEATURES
+.TP
+\(bu \fBvim like motions\fR
+Navigate with \fBhjkl\fR!
+.TP
+\(bu \fBdijo is modal\fR
+Different modes to view different stats!
+.TP
+\(bu \fBvim like command mode\fR
+Add with \fB:add\fR, delete with \fB:delete\fR and above all, quit with \fB:q!\fR.
+.TP
+\(bu \fBFully scriptable\fR
+You can configure it to track your \fIgit\fR commits!
+
+.SH GETTING STARTED
+.PP
+On running \fBdijo\fR at the command line, you are presented with a blank screen. This is the \fBDAY\fR mode, analogous to the \fBNORMAL\fR mode in Vim. In this mode, you may view stats for every day of the current month.
+.PP
+To start tracking habits, enter the command mode with \fB:.\fR Use the add command to add a habit to begin tracking.
+.TP
+Say, I would like to track the number of French lessons I took on Duolingo, and I aim to do 5 lessons each day:
+.nf
+\fB
+:add french  5
+       |     |
+       `-----|----- habit name
+              `---- goal (optional)
+\fR
+.fi
+.TP
+Go ahead and add a couple more habits the same way:
+.nf
+\fB
+:add lifting 1   <-- a yes/no kind of habit (represented by a dot grid)
+:add water       <-- no goal provided
+\fR
+.fi
+.PP
+To track your progress for the day:
+.IP
+\(bu focus the habit you want to track, (the focused habit is highlighted in bright white).
+.IP
+\(bu Hit \fBEnter\fR on the keyboard to increase the value, or \fBBackspace\fR to reduce it.
+.IP
+\(bu Once you reach your daily goal, the day is marked in green and the habit name is struck through with a line.
+.PP
+Check your weekly progress for a given habit by pressing \fBv\fR on the keyboard, this is \fBWEEK\fR mode, and press \fB<ESC>\fR to go back to \fBDAY\fR mode. \fB<Shift-v>\fR is a shortcut to display weekly progress for every habit. The current mode is indicated on the status line.
+.PP
+Review your progress for previous months by pressing \fB[\fR on the keyboard, sift through months with \fB[\fR and \fB]\fR.
+
+.SH CUSTOMIZATION
+.PP
+\fBdijo (>= v0.2.3)\fR, can be configured via a configuration file. After its first run, \fBdijo\fR creates a configuration file. \fBdijo\fR must be restarted for changes in the configuration file to take effect.
+.PP
+This file is saved in different directories based on your operating system:
+
+.nf
+.IP
+\(bu GNU/Linux: \fB$XDG_CONFIG_HOME/dijo/config.toml\fR
+.IP
+\(bu MacOS: \fB$HOME/Library/Application Support/rs.nerdypepper.dijo/config.toml\fR
+.IP
+\(bu Win10: \fB{FOLDERID_RoamingAppData}\[rs]nerdypepper\[rs]dijo\[rs]config\[rs]config.toml\fR
+.fi
+
+.PP
+The default config file (created on first run) looks something like this, \fBconfig.toml\fR:
+.IP
+.nf
+\fB
+[look]
+true_chr = \[dq]\[pc]\[dq]
+false_chr = \[dq]\[pc]\[dq]
+future_chr = \[dq]\[pc]\[dq]
+
+[colors]
+reached = \[dq]cyan\[dq]
+todo = \[dq]magenta\[dq]
+inactive = \[dq]light black\[dq]
+\fR
+.fi
+
+.SS Look
+.PP
+Variables in this section define the characters \fBdijo\fR uses in \fBDAY\fR mode to represent days of the month. Every value in this section must span exactly 1 character in length.
+
+.IP 
+\(bu \fBtrue_chr\fR: The character to use in a Bit habit when the goal is \fBreached\fR
+.IP 
+\(bu \fBfalse_chr\fR: The character to use in a Bit habit when the goal is \fBnot reached\fR
+.IP 
+\(bu \fBfuture_chr\fR: The character to use in a Bit habit when the day is \fBuntracked\fR.
+
+.SS Colors
+.PP
+Variables in this section define the colors \fBdijo\fR uses in all modes:
+
+.IP 
+\(bu \fBreached\fR: The color to use when the goal is \fBreached\fR for the day. This is also the color used in \fBWEEK\fR mode to fill the progress bar.
+.IP 
+\(bu \fBtodo\fR: The color to use when the goal is \fByet to be reached\fR.
+.IP 
+\(bu \fBinactive\fR: The color to use for \fBunfocused habits and untracked days\fR.
+
+.PP
+The values in this section are strings, and may be populated by one of the following:
+.IP
+.nf
+\fB
+ black               light black
+ red                 light red
+ green               light green
+ yellow              light yellow
+ blue                light blue
+ magenta             light magenta
+ cyan                light cyan
+ white               light white
+
+ default  -- uses your terminal\[aq]s background color
+ #123456  -- any color in hex (supported only on true color terminals)
+\fR
+.fi
+
+.PP
+\fBNote\fR: These values have to be quoted (ex.: \fBreached = \[dq]black\[dq]\fR)
+
+.SH AUTO HABITS
+.PP
+\fBdijo\fR supports auto-trackable habits, that is, habits that can be updated via scripts. Add an auto-habit to, say, track your git commits:
+.IP
+.nf
+\fB
+:add-auto commits 5
+\fR
+.fi
+.PP
+You can control \fBdijo\fR externally by calling it with the
+\fB-c\fR flag:
+.IP
+.nf
+\fB
+dijo -c \[dq]track-up commits\[dq]   # a +1 on today\[aq]s count
+dijo -c \[dq]track-down commits\[dq] # a -1 on today\[aq]s count
+\fR
+.fi
+.PP
+Firstly, point \fBgit\fR to your hooks directory
+(\fB\[ti]/.hooks\fR in this case):
+.IP
+.nf
+\fB
+# contents of \[ti]/.gitconfig
+
+[core]
+hooksPath = \[dq]/home/\fIusername\fB/.hooks\[dq]
+\fR
+.fi
+.PP
+Create a file called \fBpost-commit\fR in the \fB\[ti]/.hooks\fR directory, with the following contents (you should run \fBmkdir \[ti]/.hooks\fR if it doesn\[cq]t exist):
+.IP
+.nf
+\fB
+#! /usr/bin/env bash
+
+dijo -c \[dq]track-up commits\[dq]
+\fR
+.fi
+.IP
+.nf
+\fB
+# make the post-commit script an executable
+
+chmod +x \[ti]/.hooks/post-commit
+\fR
+.fi
+.PP
+Voil\[`a]! Every time you make a commit, \fBdijo\fR will automatically track it under the \fBcommits\fR habit.
+
+.SH MODES
+.PP
+Any habit in the interactive program can exist in one of two modes:
+.IP
+\(bu \fBDAY\fR: the default mode
+.IP
+\(bu \fBWEEK\fR: can be toggled on an off with \fBv\fR
+.SS \fBDAY\fR mode
+
+.PP
+\fBDAY\fR mode is the default mode for every habit. It shows you every day of the current month. In this mode, counting-type habits display their counts for each day of the month. Bit-type habits (yes/no) display their bits in the form of a \fB\[pc]\fR (U+00B7 Middle Dot). Days whose goals have been reached are displayed in cyan and those that haven\[cq]t been reached are displayed in magenta. Days that haven\[cq]t been tracked are displayed in \[lq]light black\[rq].
+
+.SS \fBWEEK\fR mode
+.PP
+\fBWEEK\fR mode can be triggered for a single habit via \fBv\fR,
+and for every habit via \fBV\fR. \fBWEEK\fR mode will show you a summary of your progress for every week of the month. The current week\[cq]s percentage is indicated in white, other weeks are colored in \[lq]light black\[rq]. The progress for a given week is calculated as follows:
+.IP "1." 3
+if the goal is reached for a day of the week, the day contributes
+exactly 14.28% (100/7) towards that week\[cq]s progress.
+.IP "2." 3
+if the goal is not reached for a day of the week, the day contributes
+\fBprogress / goal * 100\fR towards that week\[cq]s progress.
+.PP
+That means, to achieve a 100% for a week, you have to reach your goal
+\fIevery single day of the week\fR.
+
+.SS The Command mode
+.PP
+The command mode is different from the other modes in that it is a \[lq]control\[rq] mode rather than an \[lq]observe\[rq] mode. One can enter the command mode by hitting \fB:\fR on the keyboard. You will notice a \fB:\fR pop up at the bottom of the screen. You may now begin typing a command, once you are done, press \fBEnter\fR on the keyboard to execute it.
+.PP
+The command mode may also be accessed without running the program interactively, by starting \fBdijo\fR with the \fB-c\fR flag and passing a string to it as a command:
+.IP
+.nf
+\fB
+$ dijo -c \[dq]track-up commits\[dq]
+\fR
+.fi
+.PP
+You can hit \fBTab\fR on the keyboard inside Command mode to
+trigger completions. For example:
+.IP
+.nf
+\fB
+:d<Tab>
+# completes to
+:delete
+
+:delete fr<Tab>
+# completes to
+:delete french
+\fR
+.fi
+
+.SH COMMANDS
+.SS Keybinds
+.PP
+These are key binds you can use at \fBDAY\fR or \fBWEEK\fR modes. Some of them are dependent on the currently focused habit and some are global. Those that are dependent on the currently focused habit are marked with
+a \fB[f]\fR.
+.IP \(bu 2
+Motions:
+.RS 2
+.nf
+.IP \(bu 2
+\fBh\fR - move one cell to the left (aliases: \fB<Tab>\fR, \fB<Arrow-Left>\fR)
+.IP \(bu 2
+\fBj\fR - move one cell down (aliases: \fB<Arrow-Down>\fR)
+.IP \(bu 2
+\fBk\fR - move one cell up (alases: \fB<Arrow-Up>\fR)
+.IP \(bu 2
+\fBl\fR - move one cell to the right (aliases: \fB<Shift-Tab>\fR,
+\fB<Arrow-Right>\fR)
+.fi
+.RE
+.IP \(bu 2
+Editing
+.RS 2
+.nf
+.IP \(bu 2
+\fB<Enter>\fR - increment the currently focused habit (aliases: \fBn\fR) \fB[f]\fR
+.IP \(bu 2
+\fB<Backspace>\fR - decrement the currently focused habit (aliases: \fBp\fR) \fB[f]\fR
+.fi
+.RE
+.IP \(bu 2
+Modes
+.RS 2
+.IP \(bu 2
+\fBv\fR - enter \fBWEEK\fR mode for currently focused habit
+\fB[f]\fR
+.IP \(bu 2
+\fBV\fR - enter \fBWEEK\fR mode for all habits
+.IP \(bu 2
+\fB<Esc>\fR - return to \fBDAY\fR mode
+.RE
+.IP \(bu 2
+Time Travel
+.RS 2
+.IP \(bu 2
+\fB[\fR - shift view port back by one month
+.IP \(bu 2
+\fB]\fR - shift view port forward by one month
+.IP \(bu 2
+\fB}\fR - return to present
+.RE
+.IP \(bu 2
+Control
+.RS 2
+.IP \(bu 2
+\fB<Ctrl-c>\fR - quit without saving (subject to change)
+.RE
+.SS Commandline
+.PP
+Enter the command mode with \fB:\fR. Type out a command and press \fB<Enter>\fR on the keyboard to execute it. Most commands have `aliases', or short forms. Command mode supports auto-complete also.
+.IP \(bu 2
+Help: show command syntax
+.RS 2
+.IP \(bu 2
+Inputs: optional command or alias
+.IP \(bu 2
+Usage: \fBhelp [command]\fR
+.IP \(bu 2
+Example: \fB:help aa\fR
+.IP \(bu 2
+Aliases: \fBh\fR
+.RE
+.IP \(bu 2
+Add: add a habit
+.RS 2
+.IP \(bu 2
+Inputs: name of habit, optional daily goal
+.IP \(bu 2
+Usage: \fBadd <habit-name> [goal]\fR
+.IP \(bu 2
+Example: \fB:add french 5\fR
+.IP \(bu 2
+Aliases: \fBa\fR
+.RE
+.IP \(bu 2
+Add Auto: add an auto-trackable habit
+.RS 2
+.IP \(bu 2
+Inputs: name of habit, optional daily goal
+.IP \(bu 2
+Usage: \fBadd-auto <habit-name> [goal]\fR
+.IP \(bu 2
+Example: \fB:add-auto commits 5\fR
+.IP \(bu 2
+Aliases: \fBaa\fR
+.RE
+.IP \(bu 2
+Delete: delete a habit
+.RS 2
+.IP \(bu 2
+Inputs: name of habit to delete
+.IP \(bu 2
+Usage: \fBdelete <habit-name>\fR
+.IP \(bu 2
+Example: \fB:delete water\fR
+.IP \(bu 2
+Aliases: \fBd\fR
+.RE
+.IP \(bu 2
+Month motions: stats from the past
+.RS 2
+.IP \(bu 2
+Inputs: None
+.IP \(bu 2
+Usage: \fBmonth-prev\fR, \fBmonth-next\fR
+.IP \(bu 2
+Example: \fB:month-prev\fR
+.IP \(bu 2
+Aliases: \fBmprev\fR, \fBmnext\fR
+.RE
+.IP \(bu 2
+Tracking: For use only with \fBdijo --command\fR, works only on
+auto-habits
+.RS 2
+.IP \(bu 2
+Inputs: name of habit to track up/down
+.IP \(bu 2
+Usage: \fBtrack-up <habit-name>\fR,
+\fBtrack-down <habit-name>\fR
+.IP \(bu 2
+Example: \fB:track-up commits\fR
+.IP \(bu 2
+Aliases: \fBtup\fR, \fBtdown\fR
+.RE
+.IP \(bu 2
+Write: write progress to disk
+.RS 2
+.IP \(bu 2
+Inputs: None
+.IP \(bu 2
+Usage: \fBwrite\fR
+.IP \(bu 2
+Example: \fB:write\fR
+.IP \(bu 2
+Aliases: \fBw\fR
+.RE
+.IP \(bu 2
+Quit: save and quit
+.RS 2
+.IP \(bu 2
+Inputs: None
+.IP \(bu 2
+Usage: \fBquit\fR
+.IP \(bu 2
+Example: \fB:quit\fR
+.IP \(bu 2
+Aliases: \fBq\fR
+.RE
+
+.SH INTERNALS
+.PP
+This document delves into the internals of \fBdijo\fR.
+.SS Files
+.PP
+After its first run, \fBdijo\fR creates three files on your file system, one to record habit data, \fBhabit_record.json\fR, one to record auto-habit data, \fBhabit_record[auto].json\fR, and one to store the default configuration in, \fBconfig.toml\fR. Data is saved in a human-readable format: JSON (a lot of work went into this). The config file is stored in TOML.
+
+.SS Data files:
+.PP
+Making changes to these files while \fBdijo\fR is running, is not recommended (\fBdijo\fR will overwrite your changes on save).
+.nf
+.IP \(bu 2
+GNU/Linux: \fB$XDG_DATA_HOME/dijo/*.json\fR
+.IP \(bu 2
+MacOS: \fB$HOME/Library/Application Support/rs.nerdypepper.dijo/*.json\fR
+.IP \(bu 2
+Win10: \fB{FOLDERID_RoamingAppData}\[rs]nerdypepper\[rs]dijo\[rs]data\[rs]*.json\fR
+.fi
+
+.SS Config files:
+.PP
+You can read more about configuring \fBdijo\fR at the Customization page.
+.nf
+.IP \(bu 2
+GNU/Linux: \fB$XDG_CONFIG_HOME/dijo/config.toml\fR
+.IP \(bu 2
+MacOS: \fB$HOME/Library/Application Support/rs.nerdypepper.dijo/config.toml\fR
+.IP \(bu 2
+Win10: \fB{FOLDERID_RoamingAppData}\[rs]nerdypepper\[rs]dijo\[rs]config\[rs]config.toml\fR
+.fi
+.PP
+\fBdijo\fR will not run on your computer if it can\[cq]t find your home directory.
+
+.SS Data format
+.PP
+The general structure of a habit is as follows:
+.IP
+.nf
+\fB
+type  :: String,
+name  :: String,
+goal  :: HabitType,
+auto  :: bool,
+stats :: Map<Date, HabitType>
+\fR
+.fi
+.PP
+\fBHabitType\fR is the type of data to be tracked and it is a \fBbool\fR for bit-type habits and a \fBu32\fR for counting habits.
+
+.SS File watchers
+.PP
+\fBdijo\fR sets up a file watcher (in the interactive mode), and watches \fBhabit_record[auto].json\fR for changes. When changes are made to this file via \fBdijo -c\fR or equivalent, the interactive mode receives an update. However, the change is not reflected immediately because of \fBdijo\fR\[cq]s event based redrawing. You may force a redraw, and thereby update auto habits by pressing any button on the keyboard.
+
+.SH AUTHOR
+Akshay <nerdy@peppe.rs>
+
+.SH SEE ALSO
+.PP
+\fIvi\fR(1), \fIvim\fR(1), \fInvim\fR(1), \fIjq\fR(1), \fIgit\fR(1)
