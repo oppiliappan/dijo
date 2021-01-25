@@ -1,6 +1,6 @@
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult, Key};
-use cursive::theme::{Effect, Style};
+use cursive::theme::{ColorStyle, ColorType, Effect, Style};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
@@ -8,7 +8,7 @@ use chrono::prelude::*;
 use chrono::{Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Habit, TrackEvent, ViewMode};
-use crate::theme::cursor_gen;
+use crate::theme::cursor_bg;
 use crate::utils::VIEW_WIDTH;
 
 use crate::CONFIGURATION;
@@ -112,12 +112,20 @@ where
         let draw_day = |printer: &Printer| {
             let mut i = 0;
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
-                let mut day_style = todo_style;
+                let mut day_style = Style::none();
+                let mut fs = future_style;
+                let grs = ColorStyle::front(CONFIGURATION.reached_color());
+                let ts = ColorStyle::front(CONFIGURATION.todo_color());
+                let cs = ColorStyle::back(cursor_bg());
+
                 if self.reached_goal(d) {
-                    day_style = goal_reached_style;
+                    day_style = day_style.combine(Style::from(grs));
+                } else {
+                    day_style = day_style.combine(Style::from(ts));
                 }
                 if d == now && printer.focused {
-                    day_style = day_style.combine(cursor_gen(day_style));
+                    day_style = day_style.combine(cs);
+                    fs = fs.combine(cs);
                 }
                 let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
                 if let Some(c) = self.get_by_date(d) {
@@ -125,7 +133,7 @@ where
                         p.print(coords, &format!("{:^3}", c));
                     });
                 } else {
-                    printer.with_style(future_style, |p| {
+                    printer.with_style(fs, |p| {
                         p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
                     });
                 }

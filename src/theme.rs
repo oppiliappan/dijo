@@ -1,4 +1,4 @@
-use cursive::theme::Color::*;
+use cursive::theme::Color::{self, *};
 use cursive::theme::PaletteColor::*;
 use cursive::theme::{BorderStyle, ColorStyle, Palette, Style, Theme};
 
@@ -25,10 +25,6 @@ pub fn theme_gen() -> Theme {
     return t;
 }
 
-pub fn cursor_gen(foreground: Style) -> Style {
-    Style::from(ColorStyle::new(
-        TerminalDefault,
-        Light(cursive::theme::BaseColor::Blue),
-    ))
-    .combine(foreground)
+pub fn cursor_bg() -> Color {
+    Light(cursive::theme::BaseColor::Black)
 }
