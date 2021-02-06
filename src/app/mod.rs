@@ -21,7 +21,6 @@ pub struct App {
     _file_watcher: RecommendedWatcher,
     file_event_recv: Receiver<DebouncedEvent>,
     focus: usize,
-    view_month_offset: u32,
     cursor: Cursor,
     message: Message,
 }

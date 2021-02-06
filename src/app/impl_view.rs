@@ -96,19 +96,19 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
 
-            Event::Char('w') => {
+            Event::Char('K') => {
                 self.move_cursor(Absolute::Up);
                 return EventResult::Consumed(None);
             }
-            Event::Char('a') => {
+            Event::Char('H') => {
                 self.move_cursor(Absolute::Left);
                 return EventResult::Consumed(None);
             }
-            Event::Char('s') => {
+            Event::Char('J') => {
                 self.move_cursor(Absolute::Down);
                 return EventResult::Consumed(None);
             }
-            Event::Char('d') => {
+            Event::Char('L') => {
                 self.move_cursor(Absolute::Right);
                 return EventResult::Consumed(None);
             }
@@ -117,7 +117,7 @@ impl View for App {
                 if self.habits.is_empty() {
                     return EventResult::Consumed(None);
                 }
-                if self.habits[self.focus].view_mode() == ViewMode::Week {
+                if self.habits[self.focus].inner_data_ref().view_mode() == ViewMode::Week {
                     self.set_mode(ViewMode::Day)
                 } else {
                     self.set_mode(ViewMode::Week)
@@ -126,14 +126,15 @@ impl View for App {
             }
             Event::Char('V') => {
                 for habit in self.habits.iter_mut() {
-                    habit.set_view_mode(ViewMode::Week);
+                    habit.inner_data_mut_ref().set_view_mode(ViewMode::Week);
                 }
                 return EventResult::Consumed(None);
             }
             Event::Key(Key::Esc) => {
                 for habit in self.habits.iter_mut() {
-                    habit.set_view_mode(ViewMode::Day);
+                    habit.inner_data_mut_ref().set_view_mode(ViewMode::Day);
                 }
+                self.reset_cursor();
                 return EventResult::Consumed(None);
             }
 
@@ -149,7 +150,7 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
             Event::Char('}') => {
-                self.set_view_month_offset(0);
+                self.reset_cursor();
                 return EventResult::Consumed(None);
             }
             Event::CtrlChar('l') => {
@@ -159,14 +160,12 @@ impl View for App {
             }
 
             /* Every keybind that is not caught by App trickles
-             * down to the focused habit. We sift back to today
-             * before performing any action, "refocusing" the cursor
+             * down to the focused habit.
              * */
             _ => {
                 if self.habits.is_empty() {
                     return EventResult::Ignored;
                 }
-                self.set_view_month_offset(0);
                 self.habits[self.focus].on_event(e)
             }
         }

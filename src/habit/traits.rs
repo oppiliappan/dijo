@@ -1,58 +1,45 @@
 use chrono::NaiveDate;
-use cursive::direction::{Absolute, Direction};
+use cursive::direction::Direction;
 use cursive::event::{Event, EventResult};
 use cursive::{Printer, Vec2};
 
 use typetag;
 
-use crate::app::Cursor;
-use crate::habit::{Bit, Count, TrackEvent, ViewMode};
+use crate::habit::{Bit, Count, InnerData, TrackEvent};
 use crate::views::ShadowView;
 
 pub trait Habit {
     type HabitType;
 
-    fn set_name(&mut self, name: impl AsRef<str>);
-    fn set_goal(&mut self, goal: Self::HabitType);
-    fn name(&self) -> String;
     fn get_by_date(&self, date: NaiveDate) -> Option<&Self::HabitType>;
+    fn goal(&self) -> u32;
     fn insert_entry(&mut self, date: NaiveDate, val: Self::HabitType);
+    fn modify(&mut self, date: NaiveDate, event: TrackEvent);
+    fn name(&self) -> String;
     fn reached_goal(&self, date: NaiveDate) -> bool;
     fn remaining(&self, date: NaiveDate) -> u32;
-    fn goal(&self) -> u32;
-    fn modify(&mut self, date: NaiveDate, event: TrackEvent);
+    fn set_goal(&mut self, goal: Self::HabitType);
+    fn set_name(&mut self, name: impl AsRef<str>);
 
-    fn set_view_month_offset(&mut self, offset: u32);
-    fn view_month_offset(&self) -> u32;
-
-    fn move_cursor(&mut self, d: Absolute);
-    fn cursor(&self) -> Cursor;
-
-    fn set_view_mode(&mut self, mode: ViewMode);
-    fn view_mode(&self) -> ViewMode;
+    fn inner_data_ref(&self) -> &InnerData;
+    fn inner_data_mut_ref(&mut self) -> &mut InnerData;
 
     fn is_auto(&self) -> bool;
 }
 
 #[typetag::serde(tag = "type")]
 pub trait HabitWrapper: erased_serde::Serialize {
-    fn remaining(&self, date: NaiveDate) -> u32;
+    fn draw(&self, printer: &Printer);
     fn goal(&self) -> u32;
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
-    fn draw(&self, printer: &Printer);
+    fn name(&self) -> String;
     fn on_event(&mut self, event: Event) -> EventResult;
+    fn remaining(&self, date: NaiveDate) -> u32;
     fn required_size(&mut self, _: Vec2) -> Vec2;
     fn take_focus(&mut self, _: Direction) -> bool;
-    fn name(&self) -> String;
 
-    fn set_view_month_offset(&mut self, offset: u32);
-    fn view_month_offset(&self) -> u32;
-
-    fn move_cursor(&mut self, d: Absolute);
-    fn cursor(&self) -> Cursor;
-
-    fn set_view_mode(&mut self, mode: ViewMode);
-    fn view_mode(&self) -> ViewMode;
+    fn inner_data_ref(&self) -> &InnerData;
+    fn inner_data_mut_ref(&mut self) -> &mut InnerData;
 
     fn is_auto(&self) -> bool;
 }
@@ -88,23 +75,11 @@ macro_rules! auto_habit_impl {
             fn name(&self) -> String {
                 Habit::name(self)
             }
-            fn set_view_month_offset(&mut self, offset: u32) {
-                Habit::set_view_month_offset(self, offset)
+            fn inner_data_ref(&self) -> &InnerData {
+                Habit::inner_data_ref(self)
             }
-            fn view_month_offset(&self) -> u32 {
-                Habit::view_month_offset(self)
-            }
-            fn move_cursor(&mut self, d: Absolute) {
-                Habit::move_cursor(self, d)
-            }
-            fn cursor(&self) -> Cursor {
-                Habit::cursor(self)
-            }
-            fn set_view_mode(&mut self, mode: ViewMode) {
-                Habit::set_view_mode(self, mode)
-            }
-            fn view_mode(&self) -> ViewMode {
-                Habit::view_mode(self)
+            fn inner_data_mut_ref(&mut self) -> &mut InnerData {
+                Habit::inner_data_mut_ref(self)
             }
             fn is_auto(&self) -> bool {
                 Habit::is_auto(self)
