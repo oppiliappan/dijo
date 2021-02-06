@@ -16,7 +16,7 @@ impl Cursor {
             0: Local::now().naive_local().date(),
         }
     }
-    pub fn do_move(&mut self, d: Absolute) {
+    pub fn small_seek(&mut self, d: Absolute) {
         let today = Local::now().naive_local().date();
         let cursor = self.0;
         match d {
@@ -47,5 +47,25 @@ impl Cursor {
             }
             Absolute::None => {}
         }
+    }
+    fn long_seek(&mut self, offset: Duration) {
+        let cursor = self.0;
+        let today = Local::now().naive_local().date();
+        let next = cursor.checked_add_signed(offset).unwrap_or(cursor);
+
+        if next <= today {
+            self.0 = next;
+        } else {
+            self.0 = today;
+        }
+    }
+    pub fn month_forward(&mut self) {
+        self.long_seek(Duration::weeks(4));
+    }
+    pub fn month_backward(&mut self) {
+        self.long_seek(Duration::weeks(-4));
+    }
+    pub fn reset(&mut self) {
+        self.0 = Local::now().naive_local().date();
     }
 }

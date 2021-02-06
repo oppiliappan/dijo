@@ -1,6 +1,6 @@
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult, Key};
-use cursive::theme::{ColorStyle, ColorType, Effect, Style};
+use cursive::theme::{ColorStyle, Effect, Style};
 use cursive::view::View;
 use cursive::{Printer, Vec2};
 
@@ -35,7 +35,7 @@ where
         //         .checked_sub_signed(Duration::weeks(4 * self.view_month_offset() as i64))
         //         .unwrap()
         // };
-        let now = self.cursor().0;
+        let now = self.inner_data_ref().cursor().0;
         let is_today = now == Local::now().naive_local().date();
         let year = now.year();
         let month = now.month();
@@ -141,7 +141,7 @@ where
             }
         };
 
-        match self.view_mode() {
+        match self.inner_data_ref().view_mode() {
             ViewMode::Day => draw_day(printer),
             ViewMode::Week => draw_week(printer),
             _ => draw_day(printer),
@@ -157,7 +157,7 @@ where
     }
 
     fn on_event(&mut self, e: Event) -> EventResult {
-        let now = self.cursor().0;
+        let now = self.inner_data_mut_ref().cursor().0;
         if self.is_auto() {
             return EventResult::Ignored;
         }

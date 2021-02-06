@@ -1,13 +1,12 @@
 use std::collections::HashMap;
+use std::default::Default;
 
 use chrono::NaiveDate;
-use cursive::direction::Absolute;
 use serde::{Deserialize, Serialize};
 
-use crate::app::Cursor;
 use crate::habit::prelude::default_auto;
 use crate::habit::traits::Habit;
-use crate::habit::{TrackEvent, ViewMode};
+use crate::habit::{InnerData, TrackEvent};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Count {
@@ -19,13 +18,7 @@ pub struct Count {
     auto: bool,
 
     #[serde(skip)]
-    view_month_offset: u32,
-
-    #[serde(skip)]
-    cursor: Cursor,
-
-    #[serde(skip)]
-    view_mode: ViewMode,
+    inner_data: InnerData,
 }
 
 impl Count {
@@ -35,9 +28,7 @@ impl Count {
             stats: HashMap::new(),
             goal,
             auto,
-            view_month_offset: 0,
-            cursor: Cursor::new(),
-            view_mode: ViewMode::Day,
+            inner_data: Default::default(),
         };
     }
 }
@@ -101,23 +92,11 @@ impl Habit for Count {
             };
         }
     }
-    fn set_view_month_offset(&mut self, offset: u32) {
-        self.view_month_offset = offset;
+    fn inner_data_ref(&self) -> &InnerData {
+        &self.inner_data
     }
-    fn view_month_offset(&self) -> u32 {
-        self.view_month_offset
-    }
-    fn move_cursor(&mut self, d: Absolute) {
-        self.cursor.do_move(d);
-    }
-    fn cursor(&self) -> Cursor {
-        self.cursor
-    }
-    fn set_view_mode(&mut self, mode: ViewMode) {
-        self.view_mode = mode;
-    }
-    fn view_mode(&self) -> ViewMode {
-        self.view_mode
+    fn inner_data_mut_ref(&mut self) -> &mut InnerData {
+        &mut self.inner_data
     }
     fn is_auto(&self) -> bool {
         self.auto
