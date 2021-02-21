@@ -27,7 +27,6 @@ impl App {
             focus: 0,
             _file_watcher: watcher,
             file_event_recv: rx,
-            view_month_offset: 0,
             cursor: Cursor::new(),
             message: Message::startup(),
         };

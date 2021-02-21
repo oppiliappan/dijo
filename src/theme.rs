@@ -1,6 +1,6 @@
 use cursive::theme::Color::{self, *};
 use cursive::theme::PaletteColor::*;
-use cursive::theme::{BorderStyle, ColorStyle, Palette, Style, Theme};
+use cursive::theme::{BorderStyle, Palette, Theme};
 
 pub fn pallete_gen() -> Palette {
     let mut p = Palette::default();

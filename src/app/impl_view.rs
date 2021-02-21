@@ -134,6 +134,7 @@ impl View for App {
                 for habit in self.habits.iter_mut() {
                     habit.inner_data_mut_ref().set_view_mode(ViewMode::Day);
                 }
+                self.reset_cursor();
                 return EventResult::Consumed(None);
             }
 
@@ -159,14 +160,12 @@ impl View for App {
             }
 
             /* Every keybind that is not caught by App trickles
-             * down to the focused habit. We sift back to today
-             * before performing any action, "refocusing" the cursor
+             * down to the focused habit.
              * */
             _ => {
                 if self.habits.is_empty() {
                     return EventResult::Ignored;
                 }
-                self.reset_cursor();
                 self.habits[self.focus].on_event(e)
             }
         }
