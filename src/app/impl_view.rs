@@ -96,19 +96,19 @@ impl View for App {
                 return EventResult::Consumed(None);
             }
 
-            Event::Char('w') => {
+            Event::Char('K') => {
                 self.move_cursor(Absolute::Up);
                 return EventResult::Consumed(None);
             }
-            Event::Char('a') => {
+            Event::Char('H') => {
                 self.move_cursor(Absolute::Left);
                 return EventResult::Consumed(None);
             }
-            Event::Char('s') => {
+            Event::Char('J') => {
                 self.move_cursor(Absolute::Down);
                 return EventResult::Consumed(None);
             }
-            Event::Char('d') => {
+            Event::Char('L') => {
                 self.move_cursor(Absolute::Right);
                 return EventResult::Consumed(None);
             }
