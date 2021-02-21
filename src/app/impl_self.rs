@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
-use chrono::Local;
+use chrono::{Local, NaiveDate};
 use cursive::direction::Absolute;
 use cursive::Vec2;
 use notify::{watcher, RecursiveMode, Watcher};
@@ -15,7 +15,7 @@ use crate::command::{Command, CommandLineError};
 use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
 
-use crate::app::{App, MessageKind, StatusLine};
+use crate::app::{App, Cursor, Message, MessageKind, StatusLine};
 
 impl App {
     pub fn new() -> Self {
@@ -27,8 +27,8 @@ impl App {
             focus: 0,
             _file_watcher: watcher,
             file_event_recv: rx,
-            view_month_offset: 0,
-            message: "Type :add <habit-name> <goal> to get started, Ctrl-L to dismiss".into(),
+            cursor: Cursor::new(),
+            message: Message::startup(),
         };
     }
 
@@ -53,35 +53,42 @@ impl App {
         if self.habits.is_empty() {
             return ViewMode::Day;
         }
-        return self.habits[self.focus].view_mode();
+        return self.habits[self.focus].inner_data_ref().view_mode();
     }
 
     pub fn set_mode(&mut self, mode: ViewMode) {
         if !self.habits.is_empty() {
-            self.habits[self.focus].set_view_mode(mode);
-        }
-    }
-
-    pub fn set_view_month_offset(&mut self, offset: u32) {
-        self.view_month_offset = offset;
-        for v in self.habits.iter_mut() {
-            v.set_view_month_offset(offset);
+            self.habits[self.focus]
+                .inner_data_mut_ref()
+                .set_view_mode(mode);
         }
     }
 
     pub fn sift_backward(&mut self) {
-        self.view_month_offset += 1;
+        self.cursor.month_backward();
         for v in self.habits.iter_mut() {
-            v.set_view_month_offset(self.view_month_offset);
+            v.inner_data_mut_ref().cursor.month_backward();
         }
     }
 
     pub fn sift_forward(&mut self) {
-        if self.view_month_offset > 0 {
-            self.view_month_offset -= 1;
-            for v in self.habits.iter_mut() {
-                v.set_view_month_offset(self.view_month_offset);
-            }
+        self.cursor.month_forward();
+        for v in self.habits.iter_mut() {
+            v.inner_data_mut_ref().cursor.month_forward();
+        }
+    }
+
+    pub fn reset_cursor(&mut self) {
+        self.cursor.reset();
+        for v in self.habits.iter_mut() {
+            v.inner_data_mut_ref().cursor.reset();
+        }
+    }
+
+    pub fn move_cursor(&mut self, d: Absolute) {
+        self.cursor.small_seek(d);
+        for v in self.habits.iter_mut() {
+            v.inner_data_mut_ref().move_cursor(d);
         }
     }
 
@@ -125,11 +132,12 @@ impl App {
         let total = self.habits.iter().map(|h| h.goal()).sum::<u32>();
         let completed = total - remaining;
 
-        let timestamp = if self.view_month_offset == 0 {
+        let timestamp = if self.cursor.0 == today {
             format!("{}", Local::now().naive_local().date().format("%d/%b/%y"),)
         } else {
-            let months = self.view_month_offset;
-            format!("{}", format!("{} months ago", months),)
+            let since = NaiveDate::signed_duration_since(today, self.cursor.0).num_days();
+            let plural = if since == 1 { "" } else { "s" };
+            format!("{} ({} day{} ago)", self.cursor.0, since, plural)
         };
 
         StatusLine {

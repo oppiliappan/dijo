@@ -102,12 +102,12 @@ pub fn load_configuration_file() -> AppConfig {
     if let Ok(ref mut f) = File::open(&cf) {
         let mut j = String::new();
         f.read_to_string(&mut j);
-        return toml::from_str(&j).unwrap();
+        return toml::from_str(&j).unwrap_or_else(|e| panic!("Invalid config file: `{}`", e));
     } else {
         if let Ok(dc) = toml::to_string(&AppConfig::default()) {
             match OpenOptions::new().create(true).write(true).open(&cf) {
                 Ok(ref mut file) => file.write(dc.as_bytes()).unwrap(),
-                Err(_) => 0,
+                Err(_) => panic!("Unable to write config file to disk!"),
             };
         }
         return Default::default();

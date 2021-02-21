@@ -19,6 +19,11 @@
         channel = "nightly";
         sha256 = "LbKHsCOFXWpg/SEyACfzZuWjKbkXdH6EJKOPSGoO01E="; # set zeros after modifying channel or date
       }).rust;
+      rust-src = (mozilla.rustChannelOf {
+        date = "2020-12-23";
+        channel = "nightly";
+        sha256 = "LbKHsCOFXWpg/SEyACfzZuWjKbkXdH6EJKOPSGoO01E="; # set zeros after modifying channel or date
+      }).rust-src;
 
       naersk-lib = naersk.lib."${system}".override {
         cargo = rust;
@@ -38,10 +43,15 @@
       devShell = pkgs.mkShell {
         nativeBuildInputs = [
           rust
+          rust-src
+          pkgs.rust-analyzer
           pkgs.cargo
-          pkgs.cargo
+          pkgs.openssl
           pkgs.ncurses
         ];
+        shellHook = ''
+          export RUST_SRC_PATH="${rust-src}/lib/rustlib/src/rust/library"
+        '';
       };
     });
   }
