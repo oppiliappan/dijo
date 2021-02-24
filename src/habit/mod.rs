@@ -9,6 +9,9 @@ pub use count::Count;
 mod bit;
 pub use bit::Bit;
 
+mod float;
+pub use float::Float;
+
 mod prelude;
 pub use prelude::{TrackEvent, ViewMode};
 
