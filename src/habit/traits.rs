@@ -2,10 +2,10 @@ use chrono::NaiveDate;
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult};
 use cursive::{Printer, Vec2};
-
 use typetag;
 
-use crate::habit::{Bit, Count, InnerData, TrackEvent};
+use crate::command::GoalKind;
+use crate::habit::{Bit, Count, Float, InnerData, TrackEvent};
 use crate::views::ShadowView;
 
 pub trait Habit {
@@ -20,6 +20,7 @@ pub trait Habit {
     fn remaining(&self, date: NaiveDate) -> u32;
     fn set_goal(&mut self, goal: Self::HabitType);
     fn set_name(&mut self, name: impl AsRef<str>);
+    fn kind(&self) -> GoalKind;
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -31,6 +32,7 @@ pub trait Habit {
 pub trait HabitWrapper: erased_serde::Serialize {
     fn draw(&self, printer: &Printer);
     fn goal(&self) -> u32;
+    fn kind(&self) -> GoalKind;
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
     fn name(&self) -> String;
     fn on_event(&mut self, event: Event) -> EventResult;
@@ -69,6 +71,9 @@ macro_rules! auto_habit_impl {
             fn goal(&self) -> u32 {
                 Habit::goal(self)
             }
+            fn kind(&self) -> GoalKind {
+                Habit::kind(self)
+            }
             fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
                 Habit::modify(self, date, event);
             }
@@ -88,5 +93,12 @@ macro_rules! auto_habit_impl {
     };
 }
 
-auto_habit_impl!(Count);
-auto_habit_impl!(Bit);
+macro_rules! generate_implementations {
+    ($($x:ident),*) => (
+        $(
+            auto_habit_impl!($x);
+        )*
+    );
+}
+
+generate_implementations!(Count, Bit, Float);

@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 use cursive::event::{Event, EventResult, Key};
 use cursive::theme::{BaseColor, Color, ColorStyle};
@@ -105,9 +106,47 @@ fn call_on_app(s: &mut Cursive, input: &str) {
     }
 }
 
+#[derive(Debug, PartialEq)]
+pub enum GoalKind {
+    Count(u32),
+    Bit,
+    Float(u32, u8),
+    Addiction(u32),
+}
+
+impl FromStr for GoalKind {
+    type Err = CommandLineError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        if let Some(n) = s.strip_prefix("<") {
+            return n
+                .parse::<u32>()
+                .map_err(|_| CommandLineError::InvalidGoal(s.into()))
+                .map(GoalKind::Addiction);
+        } else if s.contains(".") {
+            let value = s
+                .chars()
+                .filter(|x| x.is_digit(10))
+                .collect::<String>()
+                .parse::<u32>()
+                .map_err(|_| CommandLineError::InvalidCommand(s.into()))?;
+            let precision = s.chars().skip_while(|&x| x != '.').count() - 1;
+            return Ok(GoalKind::Float(value, precision as u8));
+        }
+        if let Ok(v) = s.parse::<u32>() {
+            if v == 1 {
+                return Ok(GoalKind::Bit);
+            } else {
+                return Ok(GoalKind::Count(v));
+            }
+        }
+        return Err(CommandLineError::InvalidCommand(s.into()));
+    }
+}
+
 #[derive(PartialEq)]
 pub enum Command {
-    Add(String, Option<u32>, bool),
+    Add(String, Option<GoalKind>, bool),
     MonthPrev,
     MonthNext,
     Delete(String),
@@ -125,6 +164,7 @@ pub enum CommandLineError {
     InvalidCommand(String),     // command name
     InvalidArg(u32),            // position
     NotEnoughArgs(String, u32), // command name, required no. of args
+    InvalidGoal(String),        // goal expression
 }
 
 impl std::error::Error for CommandLineError {}
@@ -137,6 +177,7 @@ impl fmt::Display for CommandLineError {
             CommandLineError::NotEnoughArgs(s, n) => {
                 write!(f, "Command `{}` requires atleast {} argument(s)!", s, n)
             }
+            CommandLineError::InvalidGoal(s) => write!(f, "Invalid goal expression: `{}`", s),
         }
     }
 }
@@ -156,13 +197,7 @@ impl Command {
             if args.is_empty() {
                 return Err(CommandLineError::NotEnoughArgs(first, 1));
             }
-            let goal = args
-                .get(1)
-                .map(|x| {
-                    x.parse::<u32>()
-                        .map_err(|_| CommandLineError::InvalidArg(2))
-                })
-                .transpose()?;
+            let goal = args.get(1).map(|x| GoalKind::from_str(x)).transpose()?;
             return Ok(Command::Add(
                 args.get_mut(0).unwrap().to_string(),
                 goal,

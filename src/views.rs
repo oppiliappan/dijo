@@ -7,7 +7,7 @@ use cursive::{Printer, Vec2};
 use chrono::prelude::*;
 use chrono::{Local, NaiveDate};
 
-use crate::habit::{Bit, Count, Habit, TrackEvent, ViewMode};
+use crate::habit::{Bit, Count, Float, Habit, TrackEvent, ViewMode};
 use crate::theme::cursor_bg;
 use crate::utils::VIEW_WIDTH;
 
@@ -193,5 +193,12 @@ macro_rules! auto_view_impl {
     };
 }
 
-auto_view_impl!(Count);
-auto_view_impl!(Bit);
+macro_rules! generate_view_impls {
+    ($($x:ident),*) => (
+        $(
+            auto_view_impl!($x);
+        )*
+    );
+}
+
+generate_view_impls!(Count, Bit, Float);

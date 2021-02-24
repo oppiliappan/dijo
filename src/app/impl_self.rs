@@ -11,8 +11,8 @@ use cursive::direction::Absolute;
 use cursive::Vec2;
 use notify::{watcher, RecursiveMode, Watcher};
 
-use crate::command::{Command, CommandLineError};
-use crate::habit::{Bit, Count, HabitWrapper, TrackEvent, ViewMode};
+use crate::command::{Command, CommandLineError, GoalKind};
+use crate::habit::{Bit, Count, Float, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
 
 use crate::app::{App, Cursor, Message, MessageKind, StatusLine};
@@ -227,11 +227,21 @@ impl App {
                             .set_message(format!("Habit `{}` already exist", &name));
                         return;
                     }
-                    let kind = if goal == Some(1) { "bit" } else { "count" };
-                    if kind == "count" {
-                        self.add_habit(Box::new(Count::new(name, goal.unwrap_or(0), auto)));
-                    } else if kind == "bit" {
-                        self.add_habit(Box::new(Bit::new(name, auto)));
+                    match goal {
+                        Some(GoalKind::Bit) => {
+                            self.add_habit(Box::new(Bit::new(name, auto)));
+                        }
+                        Some(GoalKind::Count(v)) => {
+                            self.add_habit(Box::new(Count::new(name, v, auto)));
+                        }
+                        Some(GoalKind::Float(v, p)) => {
+                            self.message.set_kind(MessageKind::Error);
+                            self.message.set_message(format!("Added floating habit"));
+                            self.add_habit(Box::new(Float::new(name, v, p, auto)));
+                        }
+                        _ => {
+                            self.add_habit(Box::new(Count::new(name, 0, auto)));
+                        }
                     }
                 }
                 Command::Delete(name) => {

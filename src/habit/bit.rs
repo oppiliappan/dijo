@@ -4,6 +4,7 @@ use std::default::Default;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
+use crate::command::GoalKind;
 use crate::habit::prelude::default_auto;
 use crate::habit::traits::Habit;
 use crate::habit::{InnerData, TrackEvent};
@@ -65,6 +66,9 @@ impl Habit for Bit {
     }
     fn set_name(&mut self, n: impl AsRef<str>) {
         self.name = n.as_ref().to_owned();
+    }
+    fn kind(&self) -> GoalKind {
+        GoalKind::Bit
     }
     fn set_goal(&mut self, g: Self::HabitType) {
         self.goal = g;
