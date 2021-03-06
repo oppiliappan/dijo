@@ -23,7 +23,11 @@ much like a certain text editor.
 
 ### Install
 
-The official installation method is using `cargo`. Unofficial packages exist for some package managers as well.
+To get the latest release of `dijo`, prefer installing it
+via `cargo`. Unofficial packages exist for some package
+managers as well. You can also browse the
+[Releases](https://github.com/NerdyPepper/dijo/releases)
+page for prebuilt binaries.
 
 #### Cargo
 
@@ -48,6 +52,13 @@ $ nix-env -f channel:nixpkgs-unstable -iA dijo
 #### Arch Linux
 
 Install [`dijo-bin`](https://aur.archlinux.org/packages/dijo-bin/) or [`dijo-git`](https://aur.archlinux.org/packages/dijo-git) from the AUR.
+
+#### Windows
+
+```
+# the default termion backend dosen't run on windows yet
+$ cargo install --no-default-features --features "crossterm-backend"
+```
 
 ### Usage
 
