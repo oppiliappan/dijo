@@ -32,7 +32,7 @@
     in rec {
       packages.my-project = naersk-lib.buildPackage {
         pname = "dijo";
-        version = "0.2.6";
+        version = "0.2.7";
         root = ./.;
       };
       defaultPackage = packages.my-project;

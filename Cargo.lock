@@ -261,7 +261,7 @@ dependencies = [
 
 [[package]]
 name = "dijo"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "chrono",
  "clap",
