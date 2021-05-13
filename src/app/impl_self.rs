@@ -11,9 +11,10 @@ use cursive::direction::Absolute;
 use cursive::Vec2;
 use notify::{watcher, RecursiveMode, Watcher};
 
+use crate::CONFIGURATION;
 use crate::command::{Command, CommandLineError, GoalKind};
 use crate::habit::{Bit, Count, Float, HabitWrapper, TrackEvent, ViewMode};
-use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
+use crate::utils::{self, VIEW_HEIGHT, VIEW_WIDTH};
 
 use crate::app::{App, Cursor, Message, MessageKind, StatusLine};
 
@@ -105,15 +106,15 @@ impl App {
                 }
             }
             Absolute::Down => {
-                if self.focus + GRID_WIDTH < self.habits.len() - 1 {
-                    self.focus += GRID_WIDTH;
+                if self.focus + CONFIGURATION.grid_size() < self.habits.len() - 1 {
+                    self.focus += CONFIGURATION.grid_size();
                 } else {
                     self.focus = self.habits.len() - 1;
                 }
             }
             Absolute::Up => {
-                if self.focus as isize - GRID_WIDTH as isize >= 0 {
-                    self.focus -= GRID_WIDTH;
+                if self.focus as isize - CONFIGURATION.grid_size() as isize >= 0 {
+                    self.focus -= CONFIGURATION.grid_size();
                 } else {
                     self.focus = 0;
                 }
@@ -152,10 +153,10 @@ impl App {
     }
 
     pub fn max_size(&self) -> Vec2 {
-        let width = GRID_WIDTH * VIEW_WIDTH;
+        let width = CONFIGURATION.grid_size() * VIEW_WIDTH;
         let height = {
             if !self.habits.is_empty() {
-                (VIEW_HEIGHT as f64 * (self.habits.len() as f64 / GRID_WIDTH as f64).ceil())
+                (VIEW_HEIGHT as f64 * (self.habits.len() as f64 / CONFIGURATION.grid_size() as f64).ceil())
                     as usize
             } else {
                 0

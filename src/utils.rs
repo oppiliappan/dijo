@@ -10,28 +10,34 @@ use std::path::PathBuf;
 
 pub const VIEW_WIDTH: usize = 25;
 pub const VIEW_HEIGHT: usize = 8;
-pub const GRID_WIDTH: usize = 3;
 
 #[derive(Serialize, Deserialize)]
-pub struct Characters {
+pub struct Look {
     #[serde(default = "base_char")]
     pub true_chr: char,
     #[serde(default = "base_char")]
     pub false_chr: char,
     #[serde(default = "base_char")]
     pub future_chr: char,
+    #[serde(default = "grid_size")]
+    pub grid_size: usize,
 }
 
 fn base_char() -> char {
     '·'
 }
 
-impl Default for Characters {
+fn grid_size() -> usize {
+    3
+}
+
+impl Default for Look {
     fn default() -> Self {
-        Characters {
+        Look {
             true_chr: '·',
             false_chr: '·',
             future_chr: '·',
+            grid_size: 3,
         }
     }
 }
@@ -69,7 +75,7 @@ impl Default for Colors {
 #[derive(Serialize, Deserialize)]
 pub struct AppConfig {
     #[serde(default)]
-    pub look: Characters,
+    pub look: Look,
 
     #[serde(default)]
     pub colors: Colors,
@@ -87,13 +93,16 @@ impl Default for AppConfig {
 impl AppConfig {
     // TODO: implement string parsing from config.json
     pub fn reached_color(&self) -> Color {
-        return Color::parse(&self.colors.reached).unwrap_or(Color::Dark(BaseColor::Cyan));
+        Color::parse(&self.colors.reached).unwrap_or(Color::Dark(BaseColor::Cyan))
     }
     pub fn todo_color(&self) -> Color {
-        return Color::parse(&self.colors.todo).unwrap_or(Color::Dark(BaseColor::Magenta));
+        Color::parse(&self.colors.todo).unwrap_or(Color::Dark(BaseColor::Magenta))
     }
     pub fn inactive_color(&self) -> Color {
-        return Color::parse(&self.colors.inactive).unwrap_or(Color::Light(BaseColor::Black));
+        Color::parse(&self.colors.inactive).unwrap_or(Color::Light(BaseColor::Black))
+    }
+    pub fn grid_size(&self) -> usize {
+        self.look.grid_size
     }
 }
 

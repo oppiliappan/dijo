@@ -10,15 +10,16 @@ use cursive::view::View;
 use cursive::{Printer, Vec2};
 use notify::DebouncedEvent;
 
+use crate::CONFIGURATION;
 use crate::app::{App, MessageKind};
 use crate::habit::{HabitWrapper, ViewMode};
-use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
+use crate::utils::{self, VIEW_HEIGHT, VIEW_WIDTH};
 
 impl View for App {
     fn draw(&self, printer: &Printer) {
         let mut offset = Vec2::zero();
         for (idx, habit) in self.habits.iter().enumerate() {
-            if idx >= GRID_WIDTH && idx % GRID_WIDTH == 0 {
+            if idx >= CONFIGURATION.grid_size() && idx % CONFIGURATION.grid_size() == 0 {
                 offset = offset.map_y(|y| y + VIEW_HEIGHT).map_x(|_| 0);
             }
             habit.draw(&printer.offset(offset).focused(self.focus == idx));
@@ -41,10 +42,10 @@ impl View for App {
     }
 
     fn required_size(&mut self, _: Vec2) -> Vec2 {
-        let width = GRID_WIDTH * (VIEW_WIDTH + 2);
+        let width = CONFIGURATION.grid_size() * (VIEW_WIDTH + 2);
         let height = {
             if self.habits.len() > 0 {
-                (VIEW_HEIGHT as f64 * (self.habits.len() as f64 / GRID_WIDTH as f64).ceil())
+                (VIEW_HEIGHT as f64 * (self.habits.len() as f64 / CONFIGURATION.grid_size() as f64).ceil())
                     as usize
             } else {
                 0

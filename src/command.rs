@@ -8,7 +8,8 @@ use cursive::views::{EditView, LinearLayout, OnEventView, TextView};
 use cursive::Cursive;
 
 use crate::app::App;
-use crate::utils::{GRID_WIDTH, VIEW_WIDTH};
+use crate::CONFIGURATION;
+use crate::utils::VIEW_WIDTH;
 
 static COMMANDS: &'static [&'static str] = &[
     "add",
@@ -69,7 +70,7 @@ pub fn open_command_window(s: &mut Cursive) {
             }
         },
     )
-    .fixed_width(VIEW_WIDTH * GRID_WIDTH);
+    .fixed_width(VIEW_WIDTH * CONFIGURATION.grid_size());
     s.call_on_name("Frame", |view: &mut LinearLayout| {
         let mut commandline = LinearLayout::horizontal()
             .child(TextView::new(":"))
