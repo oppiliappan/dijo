@@ -49,6 +49,15 @@ guide.
 $ nix-env -f channel:nixpkgs-unstable -iA dijo
 ```
 
+#### Snap
+
+`dijo` on sanpstore (maintained by [@purveshpatel511](https://github.com/purveshpatel511)):
+
+```
+$ sudo snap install dijo
+```
+
+
 #### Arch Linux
 
 Install [`dijo-bin`](https://aur.archlinux.org/packages/dijo-bin/) or [`dijo-git`](https://aur.archlinux.org/packages/dijo-git) from the AUR.
