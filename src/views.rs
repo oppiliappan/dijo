@@ -1,7 +1,7 @@
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult, Key};
 use cursive::theme::{ColorStyle, Effect, Style};
-use cursive::view::View;
+use cursive::view::{CannotFocus, View};
 use cursive::{Printer, Vec2};
 
 use chrono::prelude::*;
@@ -16,7 +16,7 @@ use crate::CONFIGURATION;
 pub trait ShadowView {
     fn draw(&self, printer: &Printer);
     fn required_size(&mut self, _: Vec2) -> Vec2;
-    fn take_focus(&mut self, _: Direction) -> bool;
+    fn take_focus(&mut self, _: Direction) -> Result<EventResult, CannotFocus>;
     fn on_event(&mut self, e: Event) -> EventResult;
 }
 
@@ -151,8 +151,8 @@ where
         (25, 6).into()
     }
 
-    fn take_focus(&mut self, _: Direction) -> bool {
-        true
+    fn take_focus(&mut self, _: Direction) -> Result<EventResult, CannotFocus> {
+        Ok(EventResult::consumed())
     }
 
     fn on_event(&mut self, e: Event) -> EventResult {
@@ -183,7 +183,7 @@ macro_rules! auto_view_impl {
             fn required_size(&mut self, x: Vec2) -> Vec2 {
                 ShadowView::required_size(self, x)
             }
-            fn take_focus(&mut self, d: Direction) -> bool {
+            fn take_focus(&mut self, d: Direction) -> Result<EventResult, CannotFocus> {
                 ShadowView::take_focus(self, d)
             }
             fn on_event(&mut self, e: Event) -> EventResult {
