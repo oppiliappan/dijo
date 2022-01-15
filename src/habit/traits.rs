@@ -1,6 +1,7 @@
 use chrono::NaiveDate;
 use cursive::direction::Direction;
 use cursive::event::{Event, EventResult};
+use cursive::view::CannotFocus;
 use cursive::{Printer, Vec2};
 use typetag;
 
@@ -38,7 +39,7 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn on_event(&mut self, event: Event) -> EventResult;
     fn remaining(&self, date: NaiveDate) -> u32;
     fn required_size(&mut self, _: Vec2) -> Vec2;
-    fn take_focus(&mut self, _: Direction) -> bool;
+    fn take_focus(&mut self, _: Direction) -> Result<EventResult, CannotFocus>;
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -60,7 +61,7 @@ macro_rules! auto_habit_impl {
             fn required_size(&mut self, x: Vec2) -> Vec2 {
                 ShadowView::required_size(self, x)
             }
-            fn take_focus(&mut self, d: Direction) -> bool {
+            fn take_focus(&mut self, d: Direction) -> Result<EventResult, CannotFocus> {
                 ShadowView::take_focus(self, d)
             }
 

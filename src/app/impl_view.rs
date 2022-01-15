@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use cursive::direction::{Absolute, Direction};
 use cursive::event::{Event, EventResult, Key};
 use cursive::theme::Color;
-use cursive::view::View;
+use cursive::view::{CannotFocus, View};
 use cursive::{Printer, Vec2};
 use notify::DebouncedEvent;
 
@@ -53,8 +53,8 @@ impl View for App {
         Vec2::new(width, height + 2)
     }
 
-    fn take_focus(&mut self, _: Direction) -> bool {
-        false
+    fn take_focus(&mut self, _: Direction) -> Result<EventResult, CannotFocus> {
+        Err(CannotFocus)
     }
 
     fn on_event(&mut self, e: Event) -> EventResult {
