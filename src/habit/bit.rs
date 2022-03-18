@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::default::Default;
 
 use chrono::NaiveDate;
@@ -37,7 +37,7 @@ impl From<bool> for CustomBool {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Bit {
     name: String,
-    stats: HashMap<NaiveDate, CustomBool>,
+    stats: BTreeMap<NaiveDate, CustomBool>,
     goal: CustomBool,
 
     #[serde(default = "default_auto")]
@@ -51,7 +51,7 @@ impl Bit {
     pub fn new(name: impl AsRef<str>, auto: bool) -> Self {
         return Bit {
             name: name.as_ref().to_owned(),
-            stats: HashMap::new(),
+            stats: BTreeMap::new(),
             goal: CustomBool(true),
             auto,
             inner_data: Default::default(),

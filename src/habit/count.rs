@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::default::Default;
 
 use chrono::NaiveDate;
@@ -12,7 +12,7 @@ use crate::habit::{InnerData, TrackEvent};
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Count {
     name: String,
-    stats: HashMap<NaiveDate, u32>,
+    stats: BTreeMap<NaiveDate, u32>,
     goal: u32,
 
     #[serde(default = "default_auto")]
@@ -26,7 +26,7 @@ impl Count {
     pub fn new(name: impl AsRef<str>, goal: u32, auto: bool) -> Self {
         return Count {
             name: name.as_ref().to_owned(),
-            stats: HashMap::new(),
+            stats: BTreeMap::new(),
             goal,
             auto,
             inner_data: Default::default(),

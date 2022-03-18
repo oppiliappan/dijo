@@ -1,5 +1,5 @@
 use std::cmp::{Eq, Ord, PartialEq};
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::default::Default;
 use std::fmt;
 use std::ops::{Add, Sub};
@@ -80,7 +80,7 @@ impl Sub for FloatData {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Float {
     name: String,
-    stats: HashMap<NaiveDate, FloatData>,
+    stats: BTreeMap<NaiveDate, FloatData>,
     goal: FloatData,
     precision: u8,
     #[serde(default = "default_auto")]
@@ -94,7 +94,7 @@ impl Float {
     pub fn new(name: impl AsRef<str>, goal: u32, precision: u8, auto: bool) -> Self {
         return Float {
             name: name.as_ref().to_owned(),
-            stats: HashMap::new(),
+            stats: BTreeMap::new(),
             goal: FloatData {
                 value: goal,
                 precision,
