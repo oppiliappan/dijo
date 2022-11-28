@@ -44,8 +44,11 @@ pub struct Colors {
     pub todo: String,
     #[serde(default = "light_black")]
     pub inactive: String,
+    #[serde(default = "dark_white")]
+    pub cursor: String,
 }
 
+// Cyan and Magenta are dark by default
 fn cyan() -> String {
     "cyan".into()
 }
@@ -55,6 +58,58 @@ fn magenta() -> String {
 fn light_black() -> String {
     "light black".into()
 }
+#[allow(dead_code)]
+fn light_cyan() -> String {
+    "light cyan".into()
+}
+#[allow(dead_code)]
+fn light_magenta() -> String {
+    "light magenta".into()
+}
+#[allow(dead_code)]
+fn light_blue() -> String {
+    "light blue".into()
+}
+#[allow(dead_code)]
+fn light_green() -> String {
+    "light green".into()
+}
+#[allow(dead_code)]
+fn light_red() -> String {
+    "light red".into()
+}
+#[allow(dead_code)]
+fn light_white() -> String {
+    "light white".into()
+}
+#[allow(dead_code)]
+fn light_yellow() -> String {
+    "light yellow".into()
+}
+#[allow(dead_code)]
+fn dark_white() -> String {
+    "dark white".into()
+}
+#[allow(dead_code)]
+fn dark_black() -> String {
+    "dark black".into()
+}
+#[allow(dead_code)]
+fn dark_blue() -> String {
+    "dark blue".into()
+}
+#[allow(dead_code)]
+fn dark_green() -> String {
+    "dark green".into()
+}
+#[allow(dead_code)]
+fn dark_red() -> String {
+    "dark red".into()
+}
+#[allow(dead_code)]
+fn dark_yellow() -> String {
+    "dark yellow".into()
+}
 
 impl Default for Colors {
     fn default() -> Self {
@@ -62,6 +117,7 @@ impl Default for Colors {
             reached: cyan(),
             todo: magenta(),
             inactive: light_black(),
+            cursor: light_black(),
         }
     }
 }
@@ -94,6 +150,9 @@ impl AppConfig {
     }
     pub fn inactive_color(&self) -> Color {
         return Color::parse(&self.colors.inactive).unwrap_or(Color::Light(BaseColor::Black));
+    }
+    pub fn cursor_color(&self) -> Color {
+        return Color::parse(&self.colors.cursor).unwrap_or(Color::Light(BaseColor::Black));
     }
 }
 
