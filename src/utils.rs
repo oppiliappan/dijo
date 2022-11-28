@@ -50,68 +50,12 @@ pub struct Colors {
     pub cursor: String,
 }
 
-// Cyan and Magenta are dark by default
-fn cyan() -> String {
-    "cyan".into()
-}
-fn magenta() -> String {
-    "magenta".into()
-}
-fn light_black() -> String {
-    "light black".into()
-}
-#[allow(dead_code)]
-fn light_cyan() -> String {
-    "light cyan".into()
-}
-#[allow(dead_code)]
-fn light_magenta() -> String {
-    "light magenta".into()
-}
-#[allow(dead_code)]
-fn light_blue() -> String {
-    "light blue".into()
-}
-#[allow(dead_code)]
-fn light_green() -> String {
-    "light green".into()
-}
-#[allow(dead_code)]
-fn light_red() -> String {
-    "light red".into()
-}
-#[allow(dead_code)]
-fn light_white() -> String {
-    "light white".into()
-}
-#[allow(dead_code)]
-fn light_yellow() -> String {
-    "light yellow".into()
-}
-#[allow(dead_code)]
-fn dark_white() -> String {
-    "dark white".into()
-}
-#[allow(dead_code)]
-fn dark_black() -> String {
-    "dark black".into()
-}
-#[allow(dead_code)]
-fn dark_blue() -> String {
-    "dark blue".into()
-}
-#[allow(dead_code)]
-fn dark_green() -> String {
-    "dark green".into()
-}
-#[allow(dead_code)]
-fn dark_red() -> String {
-    "dark red".into()
-}
-#[allow(dead_code)]
-fn dark_yellow() -> String {
-    "dark yellow".into()
-}
+// NOTE: These function are only used as the default values for
+// the Colors struct above
+fn cyan()        -> String { "cyan".into()        }
+fn magenta()     -> String { "magenta".into()     }
+fn light_black() -> String { "light black".into() }
+fn dark_white()  -> String { "dark white".into()  }
 
 impl Default for Colors {
     fn default() -> Self {
