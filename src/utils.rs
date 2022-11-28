@@ -44,6 +44,8 @@ pub struct Colors {
     pub todo: String,
     #[serde(default = "light_black")]
     pub inactive: String,
+    #[serde(default = "magenta")]
+    pub future: String,
     #[serde(default = "dark_white")]
     pub cursor: String,
 }
@@ -117,6 +119,7 @@ impl Default for Colors {
             reached: cyan(),
             todo: magenta(),
             inactive: light_black(),
+            future: magenta(),
             cursor: light_black(),
         }
     }
@@ -150,6 +153,9 @@ impl AppConfig {
     }
     pub fn inactive_color(&self) -> Color {
         return Color::parse(&self.colors.inactive).unwrap_or(Color::Light(BaseColor::Black));
+    }
+    pub fn future_color(&self) -> Color {
+        return Color::parse(&self.colors.future).unwrap_or(Color::Dark(BaseColor::Magenta));
     }
     pub fn cursor_color(&self) -> Color {
         return Color::parse(&self.colors.cursor).unwrap_or(Color::Light(BaseColor::Black));

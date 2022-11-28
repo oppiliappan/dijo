@@ -4,8 +4,8 @@ use cursive::theme::{ColorStyle, Effect, Style};
 use cursive::view::{CannotFocus, View};
 use cursive::{Printer, Vec2};
 
-use chrono::prelude::*;
-use chrono::{Local, NaiveDate};
+// use chrono::prelude::*;
+use chrono::{Local, NaiveDate, Datelike};
 
 use crate::habit::{Bit, Count, Float, Habit, TrackEvent, ViewMode};
 // use crate::theme::cursor_bg;
@@ -37,11 +37,15 @@ where
         // };
         let now = self.inner_data_ref().cursor().0;
         let is_today = now == Local::now().naive_local().date();
+        let is_this_month = now.month() == Local::now().month();
+        let is_this_year = now.year() == Local::now().year();
         let year = now.year();
         let month = now.month();
+        let day = now.day();
 
         let goal_reached_style = Style::from(CONFIGURATION.reached_color());
-        let future_style = Style::from(CONFIGURATION.inactive_color());
+        let future_style = Style::from(CONFIGURATION.future_color());
+        let past_style = Style::from(CONFIGURATION.inactive_color());
 
         let strikethrough = Style::from(Effect::Strikethrough);
 
@@ -112,7 +116,8 @@ where
             let mut i = 0;
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
                 let mut day_style = Style::none();
-                let mut fs = future_style;
+                let fs = future_style;
+                let mut ps = past_style;
                 let grs = ColorStyle::front(CONFIGURATION.reached_color());
                 let ts = ColorStyle::front(CONFIGURATION.todo_color());
                 let cs = ColorStyle::back(CONFIGURATION.cursor_color());
@@ -124,7 +129,7 @@ where
                 }
                 if d == now && printer.focused {
                     day_style = day_style.combine(cs);
-                    fs = fs.combine(cs);
+                    ps = ps.combine(cs);
                 }
                 let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
                 if let Some(c) = self.get_by_date(d) {
@@ -132,9 +137,15 @@ where
                         p.print(coords, &format!("{:^3}", c));
                     });
                 } else {
-                    printer.with_style(fs, |p| {
-                        p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
-                    });
+                    if i < day || !is_this_month || !is_this_year {
+                        printer.with_style(ps, |p| {
+                            p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
+                        });
+                    } else {
+                        printer.with_style(fs, |p| {
+                            p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
+                        });
+                    }
                 }
                 i += 1;
             }
