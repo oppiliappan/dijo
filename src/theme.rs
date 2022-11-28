@@ -1,4 +1,4 @@
-use cursive::theme::Color::{self, *};
+use cursive::theme::Color::*;
 use cursive::theme::PaletteColor::*;
 use cursive::theme::{BorderStyle, Palette, Theme};
 
