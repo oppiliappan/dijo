@@ -8,7 +8,7 @@ use chrono::prelude::*;
 use chrono::{Local, NaiveDate};
 
 use crate::habit::{Bit, Count, Float, Habit, TrackEvent, ViewMode};
-use crate::theme::cursor_bg;
+// use crate::theme::cursor_bg;
 use crate::utils::VIEW_WIDTH;
 
 use crate::CONFIGURATION;
@@ -115,7 +115,7 @@ where
                 let mut fs = future_style;
                 let grs = ColorStyle::front(CONFIGURATION.reached_color());
                 let ts = ColorStyle::front(CONFIGURATION.todo_color());
-                let cs = ColorStyle::back(cursor_bg());
+                let cs = ColorStyle::back(CONFIGURATION.cursor_color());
 
                 if self.reached_goal(d) {
                     day_style = day_style.combine(Style::from(grs));
