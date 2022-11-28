@@ -59,7 +59,8 @@ where
                     Style::none()
                 },
                 if !printer.focused {
-                    future_style
+                    // future_style
+                    past_style
                 } else {
                     Style::none()
                 },
