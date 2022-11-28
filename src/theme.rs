@@ -25,6 +25,6 @@ pub fn theme_gen() -> Theme {
     return t;
 }
 
-pub fn cursor_bg() -> Color {
-    Light(cursive::theme::BaseColor::Black)
-}
+// pub fn cursor_bg() -> Color {
+//     Light(cursive::theme::BaseColor::Black)
+// }
