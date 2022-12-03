@@ -28,28 +28,26 @@ where
     T::HabitType: std::fmt::Display,
 {
     fn draw(&self, printer: &Printer) {
-        // let now = if self.view_month_offset() == 0 {
-        //     Local::today()
-        // } else {
-        //     Local::today()
-        //         .checked_sub_signed(Duration::weeks(4 * self.view_month_offset() as i64))
-        //         .unwrap()
-        // };
-        let now = self.inner_data_ref().cursor().0;
-        let is_today = now == Local::now().naive_local().date();
-        let is_this_month = now.month() == Local::now().month();
-        let is_this_year = now.year() == Local::now().year();
-        let year = now.year();
+        // Actual day of the month
+        let actual_day = Local::now().naive_local().day();
+        // This is the date at the bottom right. Not the actual date
+        let now   = self.inner_data_ref().cursor().0;
+        let year  = now.year();
         let month = now.month();
-        let day = now.day();
+        let day   = now.day();
+
+        let is_today      = now == Local::now().naive_local().date();
+        let is_this_month = now.month() == Local::now().month();
+        let is_this_year  = now.year() == Local::now().year();
 
         let goal_reached_style = Style::from(CONFIGURATION.reached_color());
-        let future_style = Style::from(CONFIGURATION.future_color());
-        let past_style = Style::from(CONFIGURATION.inactive_color());
+        let future_style       = Style::from(CONFIGURATION.future_color());
+        let today_style        = Style::from(CONFIGURATION.today_color());
 
-        let strikethrough = Style::from(Effect::Strikethrough);
+        let past_style         = Style::from(CONFIGURATION.inactive_color());
+        let strikethrough      = Style::from(Effect::Strikethrough);
 
-        let goal_status = is_today && self.reached_goal(Local::now().naive_local().date());
+        let goal_status   = is_today && self.reached_goal(Local::now().naive_local().date());
 
         printer.with_style(
             Style::merge(&[
@@ -59,7 +57,6 @@ where
                     Style::none()
                 },
                 if !printer.focused {
-                    // future_style
                     past_style
                 } else {
                     Style::none()
@@ -117,11 +114,13 @@ where
             let mut i = 0;
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
                 let mut day_style = Style::none();
-                let fs = future_style;
-                let mut ps = past_style;
+                let mut tds       = today_style;
+                let fs            = future_style;
+                let ps            = past_style;
+
                 let grs = ColorStyle::front(CONFIGURATION.reached_color());
-                let ts = ColorStyle::front(CONFIGURATION.todo_color());
-                let cs = ColorStyle::back(CONFIGURATION.cursor_color());
+                let ts  = ColorStyle::front(CONFIGURATION.todo_color());
+                let cs  = ColorStyle::back(CONFIGURATION.cursor_color());
 
                 if self.reached_goal(d) {
                     day_style = day_style.combine(Style::from(grs));
@@ -130,19 +129,29 @@ where
                 }
                 if d == now && printer.focused {
                     day_style = day_style.combine(cs);
-                    ps = ps.combine(cs);
+                    tds       = tds.combine(cs);
                 }
+
                 let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
                 if let Some(c) = self.get_by_date(d) {
                     printer.with_style(day_style, |p| {
                         p.print(coords, &format!("{:^3}", c));
                     });
                 } else {
-                    if i < day || !is_this_month || !is_this_year {
+                    if i == (actual_day -1) && is_this_month && is_this_year {
+                        tds = tds.combine(tds);
+                        tds.combine(cs);
+                        printer.with_style(tds, |p| {
+                            p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
+                        });
+
+                    }
+                    else if i < day || !is_this_month || !is_this_year {
                         printer.with_style(ps, |p| {
                             p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
                         });
-                    } else {
+                    } 
+                    else {
                         printer.with_style(fs, |p| {
                             p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
                         });
