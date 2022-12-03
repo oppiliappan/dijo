@@ -48,17 +48,21 @@ impl Default for Characters {
 #[derive(Serialize, Deserialize)]
 pub struct Colors {
     #[serde(default = "cyan")]
-    pub reached: String,
+    pub reached: String             ,
     #[serde(default = "magenta")]
-    pub todo: String,
+    pub todo: String                ,
     #[serde(default = "light_black")]
-    pub inactive: String,
+    pub inactive: String            ,
     #[serde(default = "magenta")]
-    pub future: String,
+    pub future: String              ,
     #[serde(default = "dark_white")]
-    pub cursor: String,
+    pub cursor: String              ,
     #[serde(default = "dark_red")]
-    pub today: String,
+    pub today: String               ,
+    #[serde(default = "light_black")]
+    pub stats_bar_bg: String        ,
+    #[serde(default = "cyan")]
+    pub stats_bar_fg: String        ,
 }
 
 // NOTE: These function are only used as the default values for
@@ -72,12 +76,14 @@ fn dark_red()    -> String { "dark white".into()  }
 impl Default for Colors {
     fn default() -> Self {
         Colors {
-            reached: cyan(),
-            todo: magenta(),
-            inactive: light_black(),
-            future: magenta(),
-            cursor: light_black(),
-            today: dark_red(),
+            reached:    cyan(),
+            todo:       magenta(),
+            inactive:   light_black(),
+            future:     magenta(),
+            cursor:     light_black(),
+            today:      dark_red(),
+            stats_bar_bg: light_black(),
+            stats_bar_fg: light_black(),
         }
     }
 }
@@ -119,6 +125,12 @@ impl AppConfig {
     }
     pub fn today_color(&self) -> Color {
         return Color::parse(&self.colors.today).unwrap_or(Color::Dark(BaseColor::Red));
+    }
+    pub fn stats_bar_bg_color(&self) -> Color {
+        return Color::parse(&self.colors.stats_bar_bg).unwrap_or(Color::Light(BaseColor::Black));
+    }
+    pub fn stats_bar_fg_color(&self) -> Color {
+        return Color::parse(&self.colors.stats_bar_fg).unwrap_or(Color::Dark(BaseColor::White));
     }
 }
 
