@@ -40,10 +40,12 @@ where
         let is_this_month = now.month() == Local::now().month();
         let is_this_year  = now.year() == Local::now().year();
 
-        let goal_reached_style     = Style::from(CONFIGURATION.reached_color());
-        let mut future_style       = Style::from(CONFIGURATION.future_color());
-        let mut today_style        = Style::from(CONFIGURATION.today_color());
-        let mut past_style         = Style::from(CONFIGURATION.inactive_color());
+        let goal_reached_style  = Style::from(CONFIGURATION.reached_color());
+        let mut future_style    = Style::from(CONFIGURATION.future_color());
+        let mut today_style     = Style::from(CONFIGURATION.today_color());
+        let mut past_style      = Style::from(CONFIGURATION.inactive_color());
+        let stats_bar_bg_style     = Style::from(CONFIGURATION.stats_bar_bg_color());
+        let stats_bar_fg_style     = Style::from(CONFIGURATION.stats_bar_fg_color());
 
         let strikethrough = Style::from(Effect::Strikethrough);
         let bold          = Style::from(Effect::Bold);
@@ -91,17 +93,17 @@ where
                 } else {
                     0.0
                 };
-                printer.with_style(future_style, |p| {
+                printer.with_style(stats_bar_bg_style, |p| {
                     p.print((4, line_nr), &"─".repeat(full));
                 });
-                printer.with_style(goal_reached_style, |p| {
+                printer.with_style(stats_bar_fg_style, |p| {
                     p.print((4, line_nr), &"─".repeat(bars_to_fill as usize));
                 });
                 printer.with_style(
                     if is_this_week {
-                        Style::none()
-                    } else {
                         future_style
+                    } else {
+                        Style::none()
                     },
                     |p| {
                         p.print((0, line_nr), &format!("{:2.0}% ", percentage));
