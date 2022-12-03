@@ -20,18 +20,27 @@ pub struct Characters {
     pub false_chr: char,
     #[serde(default = "base_char")]
     pub future_chr: char,
+    #[serde(default = "return_true")]
+    pub bold_future: bool,
+    #[serde(default = "return_true")]
+    pub bold_today: bool,
+    #[serde(default = "return_false")]
+    pub bold_past: bool,
 }
 
-fn base_char() -> char {
-    '·'
-}
+fn base_char()    -> char { '·'   }
+fn return_true()  -> bool { true  }
+fn return_false() -> bool { false }
 
 impl Default for Characters {
     fn default() -> Self {
         Characters {
-            true_chr: '·',
-            false_chr: '·',
-            future_chr: '·',
+            true_chr:    '·',
+            false_chr:   '·',
+            future_chr:  '·',
+            bold_future: true,
+            bold_today:  true,
+            bold_past:   false,
         }
     }
 }
