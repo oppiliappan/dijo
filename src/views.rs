@@ -40,27 +40,27 @@ where
         let is_this_month = now.month() == Local::now().month();
         let is_this_year  = now.year() == Local::now().year();
 
-        let goal_reached_style = Style::from(CONFIGURATION.reached_color());
-        let future_style       = Style::from(CONFIGURATION.future_color());
-        let today_style        = Style::from(CONFIGURATION.today_color());
+        let goal_reached_style     = Style::from(CONFIGURATION.reached_color());
+        let mut future_style       = Style::from(CONFIGURATION.future_color());
+        let mut today_style        = Style::from(CONFIGURATION.today_color());
+        let mut past_style         = Style::from(CONFIGURATION.inactive_color());
 
-        let past_style         = Style::from(CONFIGURATION.inactive_color());
-        let strikethrough      = Style::from(Effect::Strikethrough);
+        let strikethrough = Style::from(Effect::Strikethrough);
+        let bold          = Style::from(Effect::Bold);
 
-        let goal_status   = is_today && self.reached_goal(Local::now().naive_local().date());
+        if CONFIGURATION.look.bold_future { future_style = Style::merge(&[future_style, bold]);}
+        if CONFIGURATION.look.bold_today  { today_style  = Style::merge(&[today_style, bold]); }
+        if CONFIGURATION.look.bold_past   { past_style   = Style::merge(&[past_style, bold]);  }
+
+        let goal_status = is_today && self.reached_goal(Local::now().naive_local().date());
 
         printer.with_style(
             Style::merge(&[
-                if goal_status {
-                    strikethrough
-                } else {
-                    Style::none()
-                },
-                if !printer.focused {
-                    past_style
-                } else {
-                    Style::none()
-                },
+                if goal_status { strikethrough } 
+                else { Style::none() },
+
+                if !printer.focused { past_style } 
+                else { Style::none() },
             ]),
             |p| {
                 p.print(
@@ -140,12 +140,9 @@ where
                     });
                 } else {
                     if i == (actual_day -1) && is_this_month && is_this_year {
-                        // tds = tds.combine(tds);
-                        // tds.combine(cs);
                         printer.with_style(tds, |p| {
                             p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
                         });
-
                     }
                     else if i < day || !is_this_month || !is_this_year {
                         printer.with_style(ps, |p| {
