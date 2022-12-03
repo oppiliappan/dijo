@@ -13,6 +13,7 @@ use notify::DebouncedEvent;
 use crate::app::{App, MessageKind};
 use crate::habit::{HabitWrapper, ViewMode};
 use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
+use crate::CONFIGURATION;
 
 impl View for App {
     fn draw(&self, printer: &Printer) {
@@ -58,6 +59,7 @@ impl View for App {
     }
 
     fn on_event(&mut self, e: Event) -> EventResult {
+        let up = CONFIGURATION.keybindings.up;
         match self.file_event_recv.try_recv() {
             Ok(DebouncedEvent::Write(_)) => {
                 let read_from_file = |file: PathBuf| -> Vec<Box<dyn HabitWrapper>> {
@@ -78,6 +80,9 @@ impl View for App {
         if self.habits.is_empty() {
             return EventResult::Ignored;
         }
+
+        // TODO: Using a match statment, it won't be able to match on a dynamic variable
+        // This will have to be changed to an if statement
         match e {
             Event::Key(Key::Right) | Event::Key(Key::Tab) | Event::Char('l') => {
                 self.set_focus(Absolute::Right);

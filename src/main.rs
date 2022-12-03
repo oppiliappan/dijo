@@ -6,6 +6,7 @@ mod habit;
 mod theme;
 mod utils;
 mod views;
+mod keybinds;
 
 use crate::app::App;
 use crate::command::{open_command_window, Command};

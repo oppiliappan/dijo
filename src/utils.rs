@@ -76,14 +76,42 @@ fn dark_red()    -> String { "dark white".into()  }
 impl Default for Colors {
     fn default() -> Self {
         Colors {
-            reached:    cyan(),
-            todo:       magenta(),
-            inactive:   light_black(),
-            future:     magenta(),
-            cursor:     light_black(),
-            today:      dark_red(),
+            reached:      cyan(),
+            todo:         magenta(),
+            inactive:     light_black(),
+            future:       magenta(),
+            cursor:       light_black(),
+            today:        dark_red(),
             stats_bar_bg: light_black(),
             stats_bar_fg: light_black(),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct KeyBindings {
+    #[serde(default = "up")]
+    pub up: char              ,
+    #[serde(default = "down")]
+    pub down: char            ,
+    #[serde(default = "left")]
+    pub left: char            ,
+    #[serde(default = "right")]
+    pub right: char           ,
+}
+
+fn up()    -> char { 'k' }
+fn down()  -> char { 'j' }
+fn left()  -> char { 'h' }
+fn right() -> char { 'l' }
+
+impl Default for KeyBindings {
+    fn default() -> Self {
+        KeyBindings {
+            up:    up()   ,
+            down:  down() ,
+            left:  left() ,
+            right: right(),
         }
     }
 }
@@ -92,16 +120,19 @@ impl Default for Colors {
 pub struct AppConfig {
     #[serde(default)]
     pub look: Characters,
-
     #[serde(default)]
     pub colors: Colors,
+    #[serde(default)]
+    pub keybindings: KeyBindings,
+
 }
 
 impl Default for AppConfig {
     fn default() -> Self {
         AppConfig {
-            look: Default::default(),
-            colors: Default::default(),
+            look:        Default::default(),
+            colors:      Default::default(),
+            keybindings: Default::default(),
         }
     }
 }
@@ -131,6 +162,9 @@ impl AppConfig {
     }
     pub fn stats_bar_fg_color(&self) -> Color {
         return Color::parse(&self.colors.stats_bar_fg).unwrap_or(Color::Dark(BaseColor::White));
+    }
+    pub fn move_up(self) -> char {
+        return self.keybindings.up;
     }
 }
 

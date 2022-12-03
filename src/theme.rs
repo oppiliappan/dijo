@@ -20,7 +20,7 @@ pub fn pallete_gen() -> Palette {
 pub fn theme_gen() -> Theme {
     let mut t = Theme::default();
     t.shadow = false;
-    t.borders = BorderStyle::None;
+    t.borders = BorderStyle::Simple;
     t.palette = pallete_gen();
     return t;
 }
