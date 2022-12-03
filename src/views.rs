@@ -115,8 +115,8 @@ where
             while let Some(d) = NaiveDate::from_ymd_opt(year, month, i + 1) {
                 let mut day_style = Style::none();
                 let mut tds       = today_style;
+                let mut ps        = past_style;
                 let fs            = future_style;
-                let ps            = past_style;
 
                 let grs = ColorStyle::front(CONFIGURATION.reached_color());
                 let ts  = ColorStyle::front(CONFIGURATION.todo_color());
@@ -130,6 +130,7 @@ where
                 if d == now && printer.focused {
                     day_style = day_style.combine(cs);
                     tds       = tds.combine(cs);
+                    ps        = ps.combine(cs);
                 }
 
                 let coords: Vec2 = ((i % 7) * 3, i / 7 + 2).into();
@@ -139,8 +140,8 @@ where
                     });
                 } else {
                     if i == (actual_day -1) && is_this_month && is_this_year {
-                        tds = tds.combine(tds);
-                        tds.combine(cs);
+                        // tds = tds.combine(tds);
+                        // tds.combine(cs);
                         printer.with_style(tds, |p| {
                             p.print(coords, &format!("{:^3}", CONFIGURATION.look.future_chr));
                         });
