@@ -72,13 +72,6 @@ impl From<Bind> for CursiveEvent {
     }
 }
 
-#[derive(Serialize, Deserialize)]
-pub struct KeyBinds {
-    grid: Movement,
-    cursor: Movement,
-    week_mode: Bind,
-    global_week_mode: Bind,
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct Movement {
@@ -99,6 +92,15 @@ impl Movement {
     }
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct KeyBinds {
+    grid: Movement,
+    cursor: Movement,
+    week_mode: Bind,
+    global_week_mode: Bind,
+    rename_habit: Bind,
+}
+
 impl std::default::Default for KeyBinds {
     fn default() -> Self {
         let grid = Movement::new('h', 'j', 'k', 'l');
@@ -108,6 +110,7 @@ impl std::default::Default for KeyBinds {
             cursor,
             week_mode: Bind::Char('v'),
             global_week_mode: Bind::Char('V'),
+            rename_habit: Bind::Char('R'),
         };
     }
 }

@@ -48,6 +48,8 @@ pub struct Colors {
     pub future: String,
     #[serde(default = "dark_white")]
     pub cursor: String,
+    #[serde(default = "dark_red")]
+    pub today: String,
 }
 
 // NOTE: These function are only used as the default values for
@@ -56,6 +58,7 @@ fn cyan()        -> String { "cyan".into()        }
 fn magenta()     -> String { "magenta".into()     }
 fn light_black() -> String { "light black".into() }
 fn dark_white()  -> String { "dark white".into()  }
+fn dark_red()    -> String { "dark white".into()  }
 
 impl Default for Colors {
     fn default() -> Self {
@@ -65,6 +68,7 @@ impl Default for Colors {
             inactive: light_black(),
             future: magenta(),
             cursor: light_black(),
+            today: dark_red(),
         }
     }
 }
@@ -103,6 +107,9 @@ impl AppConfig {
     }
     pub fn cursor_color(&self) -> Color {
         return Color::parse(&self.colors.cursor).unwrap_or(Color::Light(BaseColor::Black));
+    }
+    pub fn today_color(&self) -> Color {
+        return Color::parse(&self.colors.today).unwrap_or(Color::Dark(BaseColor::Red));
     }
 }
 
