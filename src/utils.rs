@@ -1,4 +1,5 @@
 use cursive::theme::{BaseColor, Color};
+// use cursive::event::Event as CursiveEvent;
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
 
@@ -76,12 +77,12 @@ fn dark_red()    -> String { "dark white".into()  }
 impl Default for Colors {
     fn default() -> Self {
         Colors {
-            reached:      cyan(),
-            todo:         magenta(),
+            reached:      cyan()       ,
+            todo:         magenta()    ,
             inactive:     light_black(),
-            future:       magenta(),
+            future:       magenta()    ,
             cursor:       light_black(),
-            today:        dark_red(),
+            today:        dark_red()   ,
             stats_bar_bg: light_black(),
             stats_bar_fg: light_black(),
         }
@@ -91,27 +92,67 @@ impl Default for Colors {
 #[derive(Serialize, Deserialize)]
 pub struct KeyBindings {
     #[serde(default = "up")]
-    pub up: char              ,
+    pub up: char                      ,
     #[serde(default = "down")]
-    pub down: char            ,
+    pub down: char                    ,
     #[serde(default = "left")]
-    pub left: char            ,
+    pub left: char                    ,
     #[serde(default = "right")]
-    pub right: char           ,
+    pub right: char                   ,
+    #[serde(default = "prev_day")]
+    pub prev_day: char                ,
+    #[serde(default = "next_day")]
+    pub next_day: char                ,
+    #[serde(default = "prev_week")]
+    pub prev_week: char               ,
+    #[serde(default = "next_week")]
+    pub next_week: char               ,
+    #[serde(default = "prev_month")]
+    pub prev_month: char              ,
+    #[serde(default = "next_month")]
+    pub next_month: char              ,
+    #[serde(default = "weekly_stats")]
+    pub weekly_stats: char            ,
+    #[serde(default = "monthly_stats")]
+    pub monthly_stats: char           ,
+    #[serde(default = "clear_message")]
+    pub clear_message: char           ,
+    #[serde(default = "command_mode")]
+    pub command_mode: char           ,
 }
 
-fn up()    -> char { 'k' }
-fn down()  -> char { 'j' }
-fn left()  -> char { 'h' }
-fn right() -> char { 'l' }
+fn up()            -> char { 'k' }
+fn down()          -> char { 'j' }
+fn left()          -> char { 'h' }
+fn right()         -> char { 'l' }
+fn prev_day()      -> char { 'H' }
+fn next_day()      -> char { 'L' }
+fn prev_week()     -> char { 'K' }
+fn next_week()     -> char { 'J' }
+fn prev_month()    -> char { '[' }
+fn next_month()    -> char { ']' }
+fn weekly_stats()  -> char { 'v' }
+fn monthly_stats() -> char { 'V' }
+fn clear_message() -> char { 'l' }
+fn command_mode()  -> char { ':' }
 
 impl Default for KeyBindings {
     fn default() -> Self {
         KeyBindings {
-            up:    up()   ,
-            down:  down() ,
-            left:  left() ,
-            right: right(),
+            up:            up()            ,
+            down:          down()          ,
+            left:          left()          ,
+            right:         right()         ,
+            prev_day:      prev_day()      ,
+            next_day:      next_day()      ,
+            prev_week:     prev_week()     ,
+            next_week:     next_week()     ,
+            prev_month:    prev_month()    ,
+            next_month:    next_month()    ,
+            weekly_stats:  weekly_stats()  ,
+            monthly_stats: monthly_stats() ,
+            clear_message: clear_message() ,
+            command_mode:  command_mode()  ,
         }
     }
 }
@@ -155,17 +196,31 @@ impl AppConfig {
         return Color::parse(&self.colors.cursor).unwrap_or(Color::Light(BaseColor::Black));
     }
     pub fn today_color(&self) -> Color {
-        return Color::parse(&self.colors.today).unwrap_or(Color::Dark(BaseColor::Red));
+        return Color::parse(&self.colors.today).unwrap_or(Color::Dark(BaseColor::Blue));
     }
     pub fn stats_bar_bg_color(&self) -> Color {
         return Color::parse(&self.colors.stats_bar_bg).unwrap_or(Color::Light(BaseColor::Black));
     }
     pub fn stats_bar_fg_color(&self) -> Color {
-        return Color::parse(&self.colors.stats_bar_fg).unwrap_or(Color::Dark(BaseColor::White));
+        return Color::parse(&self.colors.stats_bar_fg).unwrap_or(Color::Dark(BaseColor::Cyan));
     }
-    pub fn move_up(self) -> char {
-        return self.keybindings.up;
-    }
+
+    pub fn move_up(&self)            -> char { return self.keybindings.up;            }
+    pub fn move_down(&self)          -> char { return self.keybindings.down;          }
+    pub fn move_left(&self)          -> char { return self.keybindings.left;          }
+    pub fn move_right(&self)         -> char { return self.keybindings.right;         }
+    pub fn move_prev_day(&self)      -> char { return self.keybindings.prev_day;      }
+    pub fn move_next_day(&self)      -> char { return self.keybindings.next_day;      } 
+    pub fn move_prev_week(&self)     -> char { return self.keybindings.prev_week;     }
+    pub fn move_next_week(&self)     -> char { return self.keybindings.next_week;     } 
+    pub fn move_prev_month(&self)    -> char { return self.keybindings.prev_month;    }
+    pub fn move_next_month(&self)    -> char { return self.keybindings.next_month;    } 
+    pub fn show_weekly_stats(&self)  -> char { return self.keybindings.weekly_stats;  }
+    pub fn show_monthly_stats(&self) -> char { return self.keybindings.monthly_stats; } 
+    pub fn clear_msg(&self)          -> char { return self.keybindings.clear_message; } 
+    pub fn cmd_mode(&self)           -> char { return self.keybindings.command_mode;  } 
+
+
 }
 
 pub fn load_configuration_file() -> AppConfig {

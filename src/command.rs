@@ -6,9 +6,9 @@ use cursive::theme::{BaseColor, Color, ColorStyle};
 use cursive::view::Resizable;
 use cursive::views::{EditView, LinearLayout, OnEventView, TextView};
 use cursive::Cursive;
-
 use crate::app::App;
 use crate::utils::{GRID_WIDTH, VIEW_WIDTH};
+use crate::CONFIGURATION;
 
 static COMMANDS: &'static [&'static str] = &[
     "add",
