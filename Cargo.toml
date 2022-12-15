@@ -19,7 +19,7 @@ typetag = "0.1.4"
 directories = "3.0.1"
 clap = "2.33"
 notify = "4.0"
-toml = "0.5.6"
+toml = "0.5.10"
 syn = "=1.0.57"
 
 [dependencies.cursive]
