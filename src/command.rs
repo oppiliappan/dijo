@@ -81,7 +81,7 @@ pub fn open_command_window(s: &mut Cursive) {
 }
 
 fn call_on_app(s: &mut Cursive, input: &str) {
-    // things to do after recieving the command
+    // things to do after receiving the command
     // 1. parse the command
     // 2. clean existing command messages
     // 3. remove the command window
@@ -175,7 +175,7 @@ impl fmt::Display for CommandLineError {
             CommandLineError::InvalidCommand(s) => write!(f, "Invalid command: `{}`", s),
             CommandLineError::InvalidArg(p) => write!(f, "Invalid argument at position {}", p),
             CommandLineError::NotEnoughArgs(s, n) => {
-                write!(f, "Command `{}` requires atleast {} argument(s)!", s, n)
+                write!(f, "Command `{}` requires at least {} argument(s)!", s, n)
             }
             CommandLineError::InvalidGoal(s) => write!(f, "Invalid goal expression: `{}`", s),
         }

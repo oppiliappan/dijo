@@ -2,7 +2,7 @@ use cursive::theme::Color::{self, *};
 use cursive::theme::PaletteColor::*;
 use cursive::theme::{BorderStyle, Palette, Theme};
 
-pub fn pallete_gen() -> Palette {
+pub fn palette_gen() -> Palette {
     let mut p = Palette::default();
     p[Background] = TerminalDefault;
     p[Shadow] = TerminalDefault;
@@ -21,7 +21,7 @@ pub fn theme_gen() -> Theme {
     let mut t = Theme::default();
     t.shadow = false;
     t.borders = BorderStyle::None;
-    t.palette = pallete_gen();
+    t.palette = palette_gen();
     return t;
 }
 
