@@ -65,7 +65,7 @@ Install [`dijo-bin`](https://aur.archlinux.org/packages/dijo-bin/) or [`dijo-git
 #### Windows
 
 ```
-# the default termion backend dosen't run on windows yet
+# the default termion backend doesn't run on windows yet
 $ cargo install --no-default-features --features "crossterm-backend"
 ```
 
