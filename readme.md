@@ -68,7 +68,13 @@ Install [`dijo-bin`](https://aur.archlinux.org/packages/dijo-bin/) or [`dijo-git
 # the default termion backend dosen't run on windows yet
 $ cargo install --no-default-features --features "crossterm-backend"
 ```
+#### MacOS
+```
+# Tap Brew Repository 
+$ brew tap slano-ls/dijo
+$ brew install dijo
 
+```
 ### Usage
 
 `dijo` has a [detailed
