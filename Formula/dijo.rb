@@ -1,4 +1,4 @@
-class dijo < Formula
+class Dijo < Formula
   desc "Terminal Habit Tracker Written in Rust"
   homepage "https://github.com/nerdypepper/dijo"
   url  "https://github.com/slano-ls/homebrew-dijo/releases/latest/download/dijo-mac.tar.gz"
@@ -6,6 +6,6 @@ class dijo < Formula
   version "0.1.0"
 
   def install
-    bin.install "dijo"
+    bin.install "Dijo"
   end
 end
