@@ -3,6 +3,7 @@ use std::f64;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::path::PathBuf;
+use std::process::exit;
 use std::sync::mpsc::channel;
 use std::time::Duration;
 
@@ -12,7 +13,7 @@ use cursive::Vec2;
 use notify::{watcher, RecursiveMode, Watcher};
 
 use crate::command::{Command, CommandLineError, GoalKind};
-use crate::habit::{Bit, Count, Float, HabitWrapper, TrackEvent, ViewMode};
+use crate::habit::{Bit, Count, Float, Habit, HabitWrapper, TrackEvent, ViewMode};
 use crate::utils::{self, GRID_WIDTH, VIEW_HEIGHT, VIEW_WIDTH};
 
 use crate::app::{App, Cursor, Message, MessageKind, StatusLine};
@@ -47,6 +48,29 @@ impl App {
             self.message
                 .set_message(format!("Could not delete habit `{}`", name))
         }
+    }
+
+    pub fn backfill_by_name(&mut self, name: &str) {
+        // If no argument was given, "all" will be the name
+        if name == "all" {
+            for habit in self.habits.iter_mut() {
+                habit.backfill();
+            }
+            self.message.set_kind(MessageKind::Info);
+            self.message.set_message("All habits were backfilled");
+            return;
+        }
+        // If a habit was provided, then 
+        let pos = self.habits.iter_mut().position(|habit| habit.name() == name);
+        if pos.is_none()
+        {
+            self.message.set_kind(MessageKind::Error);
+            self.message.set_message(format!("Could not backfill habit `{name}`"));
+            return;
+        }
+        self.habits[pos.unwrap()].backfill();
+        self.message.set_kind(MessageKind::Info);
+        self.message.set_message(format!("Habit was backfilled: `{name}`"));
     }
 
     pub fn get_mode(&self) -> ViewMode {
@@ -164,15 +188,28 @@ impl App {
         Vec2::new(width, height + 2)
     }
 
-    pub fn load_state() -> Self {
+    pub fn load_state() -> Self 
+    {
         let (regular_f, auto_f) = (utils::habit_file(), utils::auto_habit_file());
-        let read_from_file = |file: PathBuf| -> Vec<Box<dyn HabitWrapper>> {
-            if let Ok(ref mut f) = File::open(file) {
-                let mut j = String::new();
-                f.read_to_string(&mut j);
-                return serde_json::from_str(&j).unwrap();
-            } else {
-                return Vec::new();
+        let read_from_file = |file: PathBuf| -> Vec<Box<dyn HabitWrapper>> 
+        {
+            let mut f = match File::open(file) {
+                Ok(file) => file ,
+                Err(_)   => {
+                    eprintln!("Error: Couldn't open habit_record.json");
+                    // Easier to do it this way for now.
+                    exit(1);
+                }
+            };
+
+            let mut j = String::new();
+            f.read_to_string(&mut j);
+            match serde_json::from_str(&j) {
+                Ok(v)  => return v,
+                Err(_) => {
+                    eprintln!("Error: Please fix your habit_record.json");
+                    exit(1);
+                }
             }
         };
 
@@ -271,6 +308,7 @@ impl App {
                                 "cmds"  | "commands" => "add, add-auto, delete, month-{prev,next}, track-{up,down}, help, quit",
                                 "keys" => "TODO", // TODO (view?)
                                 "wq" =>   "write current state to disk and quit dijo",
+                                "backfill" | "bf" => "backfill <habit-name>    (alias: bf)",
                                 _ => "unknown command or help topic.",
                             }
                         )
@@ -282,7 +320,10 @@ impl App {
                 Command::Quit | Command::Write | Command::WriteAndQuit => self.save_state(),
                 Command::MonthNext => self.sift_forward(),
                 Command::MonthPrev => self.sift_backward(),
-                Command::Blank => {}
+                Command::Blank => {},
+                Command::BackFill(name) => {
+                    self.backfill_by_name(&name);
+                }
             },
             Err(e) => {
                 self.message.set_message(e.to_string());

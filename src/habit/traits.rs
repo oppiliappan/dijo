@@ -18,10 +18,12 @@ pub trait Habit {
     fn modify(&mut self, date: NaiveDate, event: TrackEvent);
     fn name(&self) -> String;
     fn reached_goal(&self, date: NaiveDate) -> bool;
+    fn goal_not_reached(&self, date: NaiveDate) -> bool;
     fn remaining(&self, date: NaiveDate) -> u32;
     fn set_goal(&mut self, goal: Self::HabitType);
     fn set_name(&mut self, name: impl AsRef<str>);
     fn kind(&self) -> GoalKind;
+    fn backfill(&mut self) -> ();
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -40,6 +42,7 @@ pub trait HabitWrapper: erased_serde::Serialize {
     fn remaining(&self, date: NaiveDate) -> u32;
     fn required_size(&mut self, _: Vec2) -> Vec2;
     fn take_focus(&mut self, _: Direction) -> Result<EventResult, CannotFocus>;
+    fn backfill(&mut self) -> ();
 
     fn inner_data_ref(&self) -> &InnerData;
     fn inner_data_mut_ref(&mut self) -> &mut InnerData;
@@ -80,6 +83,9 @@ macro_rules! auto_habit_impl {
             }
             fn name(&self) -> String {
                 Habit::name(self)
+            }
+            fn backfill(&mut self) -> () {
+                Habit::backfill(self)
             }
             fn inner_data_ref(&self) -> &InnerData {
                 Habit::inner_data_ref(self)

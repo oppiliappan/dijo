@@ -127,7 +127,19 @@ impl Habit for Float {
     fn insert_entry(&mut self, date: NaiveDate, val: Self::HabitType) {
         *self.stats.entry(date).or_insert(val) = val;
     }
+    fn backfill(&mut self) -> () {
+        todo!();
+    }
     fn reached_goal(&self, date: NaiveDate) -> bool {
+        if let Some(val) = self.stats.get(&date) {
+            if val >= &self.goal {
+                return true;
+            }
+        }
+        return false;
+    }
+    // Not used, don't worry about it. Only doing this for bit
+    fn goal_not_reached(&self, date: NaiveDate) -> bool {
         if let Some(val) = self.stats.get(&date) {
             if val >= &self.goal {
                 return true;

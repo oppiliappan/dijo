@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::default::Default;
 
-use chrono::NaiveDate;
+use chrono::{Date, Datelike, Duration, Local, NaiveDate, NaiveTime, TimeZone};
 use serde::{Deserialize, Serialize};
 
 use crate::command::GoalKind;
@@ -52,7 +52,7 @@ impl Bit {
         return Bit {
             name: name.as_ref().to_owned(),
             stats: HashMap::new(),
-            goal: CustomBool(true),
+            goal: CustomBool(false),
             auto,
             inner_data: Default::default(),
         };
@@ -79,6 +79,35 @@ impl Habit for Bit {
     fn insert_entry(&mut self, date: NaiveDate, val: Self::HabitType) {
         *self.stats.entry(date).or_insert(val) = val;
     }
+
+    fn backfill(&mut self) {
+        // TODO(tyler): get all dates in stats
+        // Loop through them all and if a date is missing,
+        // then set it to false
+        let dates: Vec<&NaiveDate> = self.stats.keys().collect();
+
+        // If there are no dates, then there's nothing to backfill
+        if dates.is_empty(){
+            return;
+        }
+
+        let mut target_date: NaiveDate = *dates.get(0).unwrap().clone();
+        let tyy = Local::today().year();
+        let tmm = Local::today().month();
+        let tdd = Local::today().day();
+        let today: NaiveDate = NaiveDate::from_ymd(tyy, tmm, tdd);
+
+        while target_date < today {
+            // Insert false for a date that isn't already in the history
+            if self.stats.get(&target_date).is_some() {
+                target_date += Duration::days(1);
+                continue
+            }
+            self.insert_entry(target_date.clone(), CustomBool(false));
+            target_date += Duration::days(1);
+        }
+    }
+
     fn reached_goal(&self, date: NaiveDate) -> bool {
         if let Some(val) = self.stats.get(&date) {
             if val.0 >= self.goal.0 {
@@ -87,6 +116,15 @@ impl Habit for Bit {
         }
         return false;
     }
+
+    fn goal_not_reached(&self, date: NaiveDate) -> bool {
+        if let Some(val) = self.stats.get(&date){
+            // return val.0;
+            return true;
+        }
+        return false;
+    }
+
     fn remaining(&self, date: NaiveDate) -> u32 {
         if let Some(val) = self.stats.get(&date) {
             if val.0 {
@@ -98,9 +136,11 @@ impl Habit for Bit {
             return 1;
         }
     }
+
     fn goal(&self) -> u32 {
         return 1;
     }
+
     fn modify(&mut self, date: NaiveDate, event: TrackEvent) {
         if let Some(val) = self.stats.get_mut(&date) {
             match event {

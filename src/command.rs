@@ -10,6 +10,7 @@ use crate::app::App;
 use crate::utils::{GRID_WIDTH, VIEW_WIDTH};
 use crate::CONFIGURATION;
 
+// Known commands used for command completion
 static COMMANDS: &'static [&'static str] = &[
     "add",
     "add-auto",
@@ -22,6 +23,7 @@ static COMMANDS: &'static [&'static str] = &[
     "write",
     "help",
     "writeandquit",
+    "backfill"
 ];
 
 fn get_command_completion(prefix: &str) -> Option<String> {
@@ -157,6 +159,8 @@ pub enum Command {
     Quit,
     Blank,
     WriteAndQuit,
+    // Fill in missing days with "not done"
+    BackFill(String),
 }
 
 #[derive(Debug)]
@@ -232,6 +236,17 @@ impl Command {
                 }
                 return Ok(Command::Help(Some(args[0].to_string())));
             }
+
+            // Any "no status" days will be filled with "not done" status
+            "backfill" | "bf" => {
+                // If no args were given, then backfill all
+                if args.is_empty() {
+                    return Ok(Command::BackFill(String::from("all")));
+                }
+                // Else backfill a specific habit
+                return Ok(Command::BackFill(args[0].to_string()));
+            }
+
             "mprev" | "month-prev" => return Ok(Command::MonthPrev),
             "mnext" | "month-next" => return Ok(Command::MonthNext),
             "wq" | "writeandquit" => return Ok(Command::WriteAndQuit),

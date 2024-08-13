@@ -55,10 +55,11 @@ where
         if CONFIGURATION.look.bold_past   { past_style   = Style::merge(&[past_style, bold]);  }
 
         let goal_status = is_today && self.reached_goal(Local::now().naive_local().date());
+        let marked_incomplete = is_today && self.goal_not_reached(Local::now().naive_local().date());
 
         printer.with_style(
             Style::merge(&[
-                if goal_status { strikethrough } 
+                if goal_status || marked_incomplete{ strikethrough } 
                 else { Style::none() },
 
                 if !printer.focused { past_style } 
@@ -126,7 +127,8 @@ where
 
                 if self.reached_goal(d) {
                     day_style = day_style.combine(Style::from(grs));
-                } else {
+                } 
+                else {
                     day_style = day_style.combine(Style::from(ts));
                 }
                 if d == now && printer.focused {
